@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.campus-pytest/
+*.py[cod]
+*.sqlite3*
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+test-results/
+playwright-report/
+next-env.d.ts
+.vercel/
+*.tsbuildinfo
+
+# Локальные дизайн-референсы и промежуточные материалы
+/design-inputs/
+/design-inspiration-library/
+/output/
+

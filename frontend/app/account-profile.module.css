@@ -1,0 +1,73 @@
+.identity {
+  display: grid;
+  grid-template:
+    "avatar name" auto
+    "avatar contacts" 1fr
+    / auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px clamp(16px, 3vw, 36px);
+}
+
+.avatar {
+  grid-area: avatar;
+  display: grid;
+  place-items: center;
+  width: clamp(110px, 13vw, 174px);
+  aspect-ratio: 1;
+  border: 1px solid #d6dfff;
+  border-radius: 8px;
+  background: var(--blue-tint);
+  color: var(--blue-dark);
+}
+
+.avatar svg { width: 56%; height: 56%; }
+.identity .name {
+  grid-area: name;
+  align-self: center;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  line-height: 1.1;
+  overflow-wrap: break-word;
+}
+
+.contacts { grid-area: contacts; display: grid; gap: 8px; min-width: 0; }
+.contacts :global(.facts) { max-width: 48rem; }
+
+.study { display: grid; gap: 18px; }
+.studyContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, .34fr);
+  align-items: start;
+  gap: 18px clamp(18px, 3vw, 38px);
+}
+
+.studyInfo { display: grid; gap: 14px; min-width: 0; }
+.studyInfo h3 { font-size: clamp(1.15rem, 2vw, 1.6rem); line-height: 1.25; overflow-wrap: break-word; }
+
+.enrollment {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  min-height: 94px;
+  padding: 13px 16px;
+  border-radius: 6px;
+  background: var(--blue-tint);
+  color: var(--blue-dark);
+  overflow-wrap: anywhere;
+}
+
+.enrollment strong { font-size: clamp(1.3rem, 2.5vw, 1.75rem); }
+.enrollment span { font-size: .92rem; }
+
+@media (max-width: 600px) {
+  .identity {
+    grid-template:
+      "avatar name" auto
+      "contacts contacts" 1fr
+      / auto minmax(0, 1fr);
+  }
+  .avatar { width: 80px; }
+  .identity .name { font-size: clamp(1.28rem, 5.8vw, 1.85rem); }
+  .contacts :global(.facts) > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .studyContent { grid-template-columns: minmax(0, 1fr); }
+  .enrollment { min-height: auto; }
+}

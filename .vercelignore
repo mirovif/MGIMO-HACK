@@ -1,0 +1,9 @@
+design-inputs/
+design-inspiration-library/
+output/
+.venv/
+backend/*.sqlite3*
+backend/.campus-pytest/
+frontend/test-results/
+frontend/playwright-report/
+

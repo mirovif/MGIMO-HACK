@@ -1,0 +1,196 @@
+.landing {
+  max-width: 100rem;
+  margin-inline: auto;
+  padding-inline: clamp(18px, 4vw, 64px);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 76px;
+  padding-block: 10px;
+  border-bottom: 1px solid var(--ink);
+  background: var(--paper);
+}
+
+.identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+}
+
+.identity strong { font-size: clamp(1.2rem, 2.1vw, 1.7rem); letter-spacing: -.065em; }
+.identity strong span { color: var(--blue); }
+.identity > span { color: var(--muted); font-size: .93rem; }
+.cabinetLink { min-width: 100px; flex: 0 0 auto; }
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+  align-items: center;
+  gap: clamp(26px, 4.4vw, 70px);
+  min-height: min(43rem, 78svh);
+  padding-block: clamp(36px, 5vw, 72px);
+}
+
+.intro { min-width: 0; }
+.eyebrow { color: var(--blue-dark); font-size: .86rem; font-weight: 750; letter-spacing: .065em; text-transform: uppercase; }
+
+.intro h1 {
+  margin-block: 18px 24px;
+  font-size: clamp(4rem, 8vw, 8.3rem);
+  line-height: .82;
+  letter-spacing: -.085em;
+}
+
+.intro em {
+  display: block;
+  padding-block: .11em .04em;
+  color: var(--blue);
+  font: italic 400 1.06em/.83 var(--serif);
+  letter-spacing: -.075em;
+}
+
+.description {
+  max-width: 29ch;
+  color: var(--ink);
+  font-size: clamp(1.17rem, 2.1vw, 1.69rem);
+  line-height: 1.38;
+}
+
+.explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin-top: 20px;
+  color: var(--blue-dark);
+  font-weight: 750;
+}
+
+.explore:hover { text-decoration: underline; text-underline-offset: .22em; }
+.preview { min-width: 0; }
+.previewCaption { margin-bottom: 9px; color: var(--muted); font-size: .92rem; }
+
+.previewPanel {
+  display: grid;
+  align-content: start;
+  gap: clamp(20px, 2.8vw, 38px);
+  min-height: 29rem;
+  padding: clamp(17px, 3vw, 39px);
+  border-radius: 5px;
+  background: var(--blue);
+  color: white;
+}
+
+.previewPanel :focus-visible { outline-color: white; }
+.previewHeader { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 10px 16px; }
+.previewHeader h2 { font-size: clamp(2.4rem, 4.2vw, 4.35rem); line-height: .94; letter-spacing: -.065em; }
+.previewSwitch { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.previewSwitch button {
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: white;
+  min-height: 44px;
+}
+
+.previewSwitch button[aria-pressed=true] { background: white; color: var(--blue-dark); font-weight: 700; }
+.previewSwitch button[aria-pressed=false]:hover { border-color: #aab9ff; }
+.agenda h3 { margin-bottom: 10px; font-size: clamp(1.1rem, 1.9vw, 1.5rem); }
+.agenda ul { margin: 0; padding: 0; border-block: 1px solid #aab9ff; list-style: none; }
+
+.agenda li {
+  display: grid;
+  grid-template-columns: minmax(3.55rem, .45fr) minmax(0, 1.2fr) minmax(0, .85fr);
+  align-items: stretch;
+}
+
+.agenda li + li { border-top: 1px solid #aab9ff; }
+.agenda li > * { align-content: center; min-width: 0; padding: 13px 9px; overflow-wrap: anywhere; }
+.agenda li > * + * { border-left: 1px solid #aab9ff; }
+.agenda li time { font-size: clamp(1rem, 1.85vw, 1.45rem); font-weight: 800; white-space: nowrap; }
+.agenda li span:last-child { color: #edf0ff; font-size: .88rem; }
+
+.previewRequest {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.previewRequest svg { flex-shrink: 0; color: var(--blue-dark); }
+.previewRequest strong { display: block; font-size: 1.06rem; }
+.previewRequest span { display: block; margin-top: 4px; color: var(--muted); font-size: .91rem; }
+
+.features {
+  border-top: 1px solid var(--ink);
+  padding-block: clamp(27px, 4vw, 52px);
+  scroll-margin-top: 79px;
+}
+
+.features h2 {
+  margin-bottom: clamp(18px, 3vw, 34px);
+  font-size: clamp(2rem, 4.2vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -.065em;
+}
+
+.featureGrid { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; }
+.feature { min-width: 0; border: 1px solid var(--line); border-radius: 5px; background: var(--white); }
+.feature[open] { border-color: var(--blue); }
+
+.feature summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 79px;
+  padding: 12px clamp(10px, 2vw, 22px);
+  list-style: none;
+  cursor: pointer;
+}
+
+.feature summary::-webkit-details-marker { display: none; }
+.feature summary:hover { color: var(--blue-dark); }
+.feature summary strong { font-size: clamp(1rem, 1.7vw, 1.38rem); letter-spacing: -.025em; }
+.featureIcon { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 4px; background: var(--blue-tint); color: var(--blue-dark); }
+.featureToggle { color: var(--blue-dark); }
+.feature[open] .featureToggle { transform: rotate(45deg); }
+.feature p { padding: 0 clamp(14px, 2vw, 22px) 18px; color: var(--muted); }
+.footer { border-top: 1px solid var(--line); padding-block: 16px 25px; color: var(--muted); font-size: .89rem; }
+
+@media (max-width: 950px) {
+  .hero { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); }
+  .intro h1 { font-size: clamp(3.6rem, 8.5vw, 5.3rem); }
+  .previewPanel { min-height: 24rem; }
+}
+
+@media (max-width: 690px) {
+  .header { min-height: 63px; }
+  .identity { column-gap: 10px; }
+  .identity > span { display: none; }
+  .cabinetLink { min-width: 84px; }
+  .hero { grid-template-columns: 1fr; min-height: 0; padding-block: 28px 34px; gap: 25px; }
+  .intro h1 { font-size: clamp(3.75rem, 14vw, 6.3rem); margin-block: 14px 18px; }
+  .explore { margin-top: 13px; }
+  .previewPanel { min-height: 0; }
+  .agenda li { grid-template-columns: 3.55rem minmax(0, 1fr) minmax(0, .65fr); }
+  .agenda li > * { padding: 10px 6px; font-size: .9rem; }
+  .agenda li time { font-size: 1rem; }
+  .agenda li span:last-child { font-size: .82rem; }
+  .features { scroll-margin-top: 66px; }
+  .featureGrid { grid-template-columns: 1fr; }
+  .feature summary { min-height: 71px; }
+}

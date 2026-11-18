@@ -1,0 +1,233 @@
+import { expect, test, type Page } from '@playwright/test'
+
+const mobile = { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true }
+const password = process.env.CAMPUS_TEST_PASSWORD || 'Campus-demo-26'
+
+async function login(page: Page, user: string, destination = 'home') {
+  await page.goto('/lks#app/' + destination)
+  await page.getByLabel('Логин').fill(user)
+  await page.getByLabel('Пароль').fill(password)
+  await page.getByRole('button', { name: 'Войти', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Открыть профиль' })).toBeVisible()
+}
+
+async function navigate(page: Page, label: string) {
+  await page.getByRole('button', { name: 'Открыть меню' }).click()
+  const name = label === 'Уведомления' ? /^Уведомления(?: \d+)?$/ : label
+  await page.getByRole('navigation', { name: 'Кабинет' }).getByRole('link', { name, exact: true }).click()
+}
+
+async function advance(page: Page) {
+  await page.getByRole('button', { name: 'Далее', exact: true }).click()
+}
+
+async function withoutOverflow(page: Page) {
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360)
+}
+
+test('public homepage shows the schedule demo and cabinet capabilities at 360 px', async ({ browser }) => {
+  const context = await browser.newContext(mobile)
+  const page = await context.newPage()
+  try {
+    await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: 'Деканат между парами.', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'LKS', exact: true })).toHaveCount(1)
+    const lks = page.getByRole('banner').getByRole('link', { name: 'LKS', exact: true })
+    await expect(lks).toBeVisible()
+    await expect(lks).toHaveAttribute('href', '/lks')
+    await withoutOverflow(page)
+
+    const day = page.getByRole('button', { name: 'День', exact: true })
+    const week = page.getByRole('button', { name: 'Неделя', exact: true })
+    await expect(day).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByText('Твой день', { exact: true })).toBeVisible()
+    await week.click()
+    await expect(week).toHaveAttribute('aria-pressed', 'true')
+    await expect(day).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.getByText('Твоя неделя', { exact: true })).toBeVisible()
+    await withoutOverflow(page)
+    await day.click()
+    await expect(day).toHaveAttribute('aria-pressed', 'true')
+    await expect(week).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.getByText('Твой день', { exact: true })).toBeVisible()
+
+    const possibilities = page.getByRole('link', { name: 'Посмотреть возможности', exact: true })
+    await expect(possibilities).toHaveAttribute('href', '#possibilities')
+    await possibilities.scrollIntoViewIfNeeded()
+    const initialScroll = await page.evaluate(() => window.scrollY)
+    await possibilities.click()
+    await expect(page).toHaveURL('/#possibilities')
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(initialScroll)
+    await expect(page.getByRole('heading', { name: 'Возможности кабинета', exact: true })).toBeInViewport()
+
+    const summary = page.locator('summary').filter({ hasText: 'Обращения' })
+    const details = page.locator('details').filter({ has: summary })
+    await expect(details).toHaveJSProperty('open', false)
+    await summary.click()
+    await expect(details).toHaveJSProperty('open', true)
+    await withoutOverflow(page)
+    await summary.click()
+    await expect(details).toHaveJSProperty('open', false)
+  } finally {
+    await context.close()
+  }
+})
+
+test('student and staff share a persistent case history at 360 px', async ({ browser }) => {
+  const studentContext = await browser.newContext(mobile)
+  const staffContext = await browser.newContext(mobile)
+  const strangerContext = await browser.newContext(mobile)
+  const student = await studentContext.newPage()
+  const staff = await staffContext.newPage()
+  const stranger = await strangerContext.newPage()
+  try {
+    await student.goto('/')
+    await expect(student.getByRole('heading', { level: 1, name: 'Деканат между парами.', exact: true })).toBeVisible()
+    await expect(student.getByRole('navigation')).toHaveCount(0)
+    await expect(student.getByLabel('Логин')).toHaveCount(0)
+    const lks = student.getByRole('link', { name: 'LKS', exact: true })
+    await expect(lks).toHaveCount(1)
+    await expect(lks).toHaveAttribute('href', '/lks')
+    await withoutOverflow(student)
+    await lks.click()
+    await expect(student).toHaveURL('/lks')
+    await student.getByLabel('Логин').fill('student1')
+    await student.getByLabel('Пароль').fill(password)
+    await student.getByRole('button', { name: 'Войти', exact: true }).click()
+    await expect(student.getByRole('heading', { level: 1 })).toContainText('Анна')
+    await student.goto('/')
+    await expect(lks).toBeVisible()
+    await student.goto('/lks')
+    await expect(student.getByRole('heading', { level: 1 })).toContainText('Анна')
+    await navigate(student, 'Решить ситуацию')
+    await student.getByRole('button', { name: /Мне нужна справка/ }).click()
+    await student.getByLabel('Какой документ вам нужен?').selectOption('study')
+    await advance(student)
+    await expect(student.getByText('Анна Орлова', { exact: true }).last()).toBeVisible()
+    await student.getByRole('button', { name: 'Назад' }).click()
+    await expect(student.getByLabel('Какой документ вам нужен?')).toHaveValue('study')
+    await advance(student)
+    await student.reload()
+    await expect(student.getByRole('heading', { name: 'Данные профиля' })).toBeVisible()
+    await advance(student)
+    await withoutOverflow(student)
+    await student.getByRole('button', { name: 'Отправить обращение' }).click()
+    await expect(student.getByRole('heading', { name: 'Обращение отправлено' })).toBeVisible()
+    const number = (await student.getByRole('heading', { level: 2 }).textContent())!
+    await student.getByRole('link', { name: 'Открыть обращение' }).click()
+    await expect(student.getByRole('heading', { name: 'История' })).toBeVisible()
+    const path = new URL(student.url()).hash.slice(1)
+
+    await login(stranger, 'student2', path.replace('app/', ''))
+    await expect(stranger.getByRole('main').getByRole('alert')).toContainText('Обращение не найдено')
+
+    await login(staff, 'staff', 'requests')
+    await staff.getByRole('link').filter({ hasText: number }).click()
+    await staff.getByLabel('Действие').selectOption('review')
+    await staff.getByRole('button', { name: 'Сохранить' }).click()
+    await expect(staff.getByRole('status')).toContainText('Изменения сохранены')
+    await staff.getByLabel('Действие').selectOption('clarification')
+    await staff.getByRole('textbox', { name: 'Комментарий', exact: true }).fill('Укажите получателя справки.')
+    await staff.getByRole('button', { name: 'Сохранить' }).click()
+    await expect(staff.getByText('Укажите получателя справки.', { exact: true })).toBeVisible()
+    await withoutOverflow(staff)
+
+    await navigate(student, 'Уведомления')
+    const notice = student.locator('article').filter({ hasText: 'Укажите получателя справки.' }).first()
+    await notice.getByRole('link', { name: 'Открыть обращение' }).click()
+    await student.getByLabel('Ваш ответ').fill('Для организатора конкурса.')
+    await student.getByRole('button', { name: 'Отправить ответ' }).click()
+    await expect(student.getByText('Для организатора конкурса.', { exact: true })).toBeVisible()
+    await staff.getByRole('button', { name: 'Обновить историю' }).click()
+    await expect(staff.getByText('Для организатора конкурса.', { exact: true })).toBeVisible()
+    await staff.getByLabel('Действие').selectOption('resolved')
+    await staff.getByRole('textbox', { name: 'Комментарий', exact: true }).fill('Справка готова.')
+    await staff.getByRole('button', { name: 'Сохранить' }).click()
+    await expect(staff.getByText('Справка готова.', { exact: true })).toBeVisible()
+    await student.reload()
+    await expect(student.getByText('Справка готова.', { exact: true })).toBeVisible()
+    await expect(student.getByText('Решено', { exact: true }).first()).toBeVisible()
+  } finally {
+    await Promise.all([studentContext.close(), staffContext.close(), strangerContext.close()])
+  }
+})
+
+test('all student sections and the remaining scenarios work at 360 px', async ({ browser }) => {
+  const context = await browser.newContext(mobile)
+  const page = await context.newPage()
+  try {
+    await login(page, 'student1', 'schedule')
+    await expect(page).toHaveURL('/lks#app/schedule')
+    await page.goto('/#app/schedule')
+    await expect(page).toHaveURL('/lks#app/schedule')
+    await page.getByRole('button', { name: 'Неделя', exact: true }).click()
+    await page.locator('.room-link').first().click()
+    await expect(page.getByRole('link', { name: 'Открыть карту UMAP' })).toHaveAttribute('href', 'https://in.umap.world/reu')
+    await expect(page.getByLabel('Корпус или аудитория')).not.toHaveValue('')
+    await withoutOverflow(page)
+    await navigate(page, 'Успеваемость')
+    await page.getByRole('button', { name: 'Сессия', exact: true }).click()
+    await expect(page.getByText('Финансы')).toBeVisible()
+
+    await navigate(page, 'Мероприятия')
+    await page.getByLabel('Категория').selectOption('career')
+    const star = page.locator('.star').first()
+    if (await star.getAttribute('aria-pressed') === 'false') await star.click()
+    await expect(star).toHaveAttribute('aria-pressed', 'true')
+    await page.getByLabel('Только избранное').check()
+    await expect(page.getByText('Встреча с карьерным центром')).toBeVisible()
+    await withoutOverflow(page)
+
+    await navigate(page, 'ИИ-помощник')
+    await page.getByRole('button', { name: 'Как получить справку?' }).click()
+    await expect(page.getByText('Демонстрационный ответ', { exact: true })).toBeVisible()
+    await page.getByLabel('Ваш вопрос').fill('Где находится аудитория?')
+    await page.getByRole('button', { name: 'Отправить сообщение' }).click()
+    await expect(page.getByText('Демонстрационный ответ', { exact: true })).toHaveCount(2)
+    await withoutOverflow(page)
+
+    await navigate(page, 'Решить ситуацию')
+    await page.getByRole('button', { name: /Я заболел/ }).click()
+    await page.getByLabel('Первый день').fill('2026-11-18')
+    await page.getByLabel('Последний день').fill('2026-11-18')
+    await advance(page)
+    await page.getByRole('checkbox').first().check()
+    await advance(page)
+    await page.getByLabel('Комментарий').fill('Тестовый пропуск.')
+    await page.getByLabel('Демонстрационный документ').setInputFiles({
+      name: 'fixture.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.5\n% test document'),
+    })
+    await advance(page)
+    await expect(page.getByText('fixture.pdf')).toBeVisible()
+    await withoutOverflow(page)
+    await page.getByRole('button', { name: 'Отправить обращение' }).click()
+    await page.getByRole('link', { name: 'Открыть обращение' }).click()
+    await expect(page.getByRole('link', { name: 'fixture.pdf' })).toBeVisible()
+
+    for (const scenario of ['Мне нужна пересдача', 'Не знаю, куда обратиться']) {
+      if (scenario === 'Мне нужна пересдача') await navigate(page, 'Решить ситуацию')
+      else await page.getByRole('button', { name: 'Создать ещё обращение' }).click()
+      await page.getByRole('button', { name: new RegExp(scenario) }).click()
+      if (scenario === 'Мне нужна пересдача') await page.getByLabel('Выберите дисциплину').selectOption('Микроэкономика')
+      else await page.getByLabel('О чём ваш вопрос?').selectOption('campus')
+      await advance(page)
+      await page.getByRole('textbox').fill('Тестовое описание ситуации.')
+      await advance(page)
+      await page.getByRole('button', { name: 'Отправить обращение' }).click()
+      await expect(page.getByRole('heading', { name: 'Обращение отправлено' })).toBeVisible()
+      await withoutOverflow(page)
+    }
+    await navigate(page, 'Профиль')
+    await expect(page.getByRole('img', { name: 'Фото профиля не загружено' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Орлова Анна Сергеевна', exact: true })).toBeVisible()
+    await expect(page.getByText('Мобильный телефон', { exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Моё обучение', exact: true })).toBeVisible()
+    await expect(page.getByText('2-й курс', { exact: true })).toBeVisible()
+    await withoutOverflow(page)
+    await page.getByRole('main').getByRole('button', { name: 'Выйти' }).click()
+    await expect(page).toHaveURL('/')
+    await expect(page.getByRole('link', { name: 'LKS', exact: true })).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
