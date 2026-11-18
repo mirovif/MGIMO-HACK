@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f6f1">
+  <meta name="description" content="Визуальная библиотека веб-дизайна и айдентики. Исследуйте стили, ищите референсы и сохраняйте любимые работы.">
+  <title>Design Inspiration Library</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="catalog.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#library">Перейти к коллекции</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="#top" aria-label="Design Inspiration Library, в начало">
+        <span class="brand-icon" aria-hidden="true">✳</span>
+        <span lang="en">Design Inspiration<br>Library</span>
+      </a>
+      <nav class="collection-nav" id="collection-nav" aria-label="Разделы библиотеки">
+        <button type="button" data-view="all" aria-pressed="true">Коллекция</button>
+        <button type="button" data-view="saved" aria-pressed="false">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.8A1.8 1.8 0 0 1 7.8 4h8.4A1.8 1.8 0 0 1 18 5.8V20l-6-4-6 4z"/></svg>
+          Избранное<span class="saved-count" id="saved-count" hidden></span>
+        </button>
+      </nav>
+      <div class="search-field" role="search">
+        <svg class="icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.8"/><path d="m15 15 4.5 4.5"/></svg>
+        <input type="search" id="search" aria-label="Искать референсы" aria-keyshortcuts="/ Control+K Meta+K" placeholder="Поиск референсов" autocomplete="off">
+        <kbd class="search-hint" aria-hidden="true">/</kbd>
+        <button type="button" id="search-clear" aria-label="Очистить поиск" hidden>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="shell hero" aria-labelledby="hero-heading">
+      <div class="hero-copy">
+        <p class="hero-kicker"><span aria-hidden="true"></span> Визуальный архив</p>
+        <h1 id="hero-heading" lang="en">Design Inspiration<br><em>Library.</em></h1>
+        <p class="hero-description">Референсы веб-дизайна и айдентики. Исследуйте разные стили и сохраняйте идеи для своих проектов.</p>
+      </div>
+      <div class="hero-art" id="featured" aria-label="Избранные референсы коллекции">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <span class="hero-spark" aria-hidden="true">✳</span>
+        <button class="feature feature-left" type="button" data-featured="img-6512" aria-label="Открыть референс Lumera">
+          <img src="assets/previews/img-6512.webp" alt="">
+        </button>
+        <button class="feature feature-right" type="button" data-featured="img-6590" aria-label="Открыть референс с оранжевой бабочкой">
+          <img src="assets/previews/img-6590.webp" alt="">
+        </button>
+        <button class="feature feature-front" type="button" data-featured="file-000" aria-label="Открыть референс с горным пейзажем">
+          <img src="assets/previews/file-000.webp" alt="" fetchpriority="high">
+        </button>
+      </div>
+    </section>
+
+    <section class="shell library" id="library" aria-labelledby="collection-title">
+      <div class="library-heading" id="library-header">
+        <h2 id="collection-title">Коллекция</h2>
+        <p id="result-count" role="status" aria-live="polite" aria-atomic="true"></p>
+      </div>
+      <div class="style-filters" id="style-filters" role="group" aria-label="Фильтр по визуальному стилю"></div>
+      <div class="gallery" id="gallery"></div>
+      <div class="empty-state" id="empty-state" hidden>
+        <span class="empty-mark" aria-hidden="true">✳</span>
+        <h3 id="empty-title"></h3>
+        <p id="empty-copy"></p>
+        <button class="outline-button" type="button" id="empty-reset"></button>
+      </div>
+      <noscript><p>Для поиска и просмотра коллекции включите JavaScript в браузере.</p></noscript>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <span class="footer-brand" lang="en">Design Inspiration Library</span>
+    <details class="source-links">
+      <summary>Ссылки из подборки</summary>
+      <ul>
+        <li><a href="https://dribbble.com/shots/27342640-Clean-Energy-Brand-Moodboard-Bento-Grid-Web-Design-Concept" target="_blank" rel="noopener noreferrer">Clean Energy Brand Moodboard · Dribbble</a></li>
+        <li><a href="https://dribbble.com/shots/21525223-SKYWARD-Web-3-0-Brand-Identity" target="_blank" rel="noopener noreferrer">Skyward · Dribbble</a></li>
+        <li><a href="https://dribbble.com/shots/27641890-AURA-REAL-ESTATE-Strategic-Brand-Web-Design" target="_blank" rel="noopener noreferrer">Aura Real Estate · Dribbble</a></li>
+        <li><a href="https://www.pinterest.com/pin/366973069645811267/" target="_blank" rel="noopener noreferrer">Premium Car Rental · Pinterest</a></li>
+        <li><a href="https://www.pinterest.com/pin/569353577917214566/" target="_blank" rel="noopener noreferrer">Forge Automotive · Pinterest</a></li>
+        <li><a href="https://www.pinterest.com/pin/264938390586658112/" target="_blank" rel="noopener noreferrer">Artistic Parallax Slider · Pinterest</a></li>
+      </ul>
+    </details>
+  </footer>
+
+  <dialog id="viewer" class="viewer" aria-labelledby="viewer-title" aria-describedby="viewer-description">
+    <div class="viewer-frame">
+      <div class="viewer-toolbar">
+        <div class="viewer-navigation" aria-label="Навигация по референсам">
+          <button type="button" class="icon-button" id="viewer-prev" aria-label="Предыдущий референс">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+          </button>
+          <span id="viewer-position" aria-live="polite"></span>
+          <button type="button" class="icon-button" id="viewer-next" aria-label="Следующий референс">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="viewer-actions">
+          <button type="button" class="icon-button" id="viewer-zoom" aria-label="Масштаб 100%" title="Масштаб 100%">100%</button>
+          <button type="button" class="icon-button" id="viewer-save" aria-label="Сохранить в избранное">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5.8A1.8 1.8 0 0 1 7.8 4h8.4A1.8 1.8 0 0 1 18 5.8V20l-6-4-6 4z"/></svg>
+          </button>
+          <button type="button" class="icon-button" id="viewer-close" aria-label="Закрыть просмотр" autofocus>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="viewer-media" id="viewer-media"></div>
+      <div class="viewer-details">
+        <div class="viewer-caption">
+          <span class="viewer-style" id="viewer-style"></span>
+          <h2 id="viewer-title"></h2>
+          <p id="viewer-description"></p>
+          <ul class="viewer-tags" id="viewer-tags" aria-label="Признаки референса"></ul>
+        </div>
+        <div class="viewer-links">
+          <a class="outline-button original-link" id="viewer-original" target="_blank" rel="noopener">Открыть оригинал</a>
+          <a class="outline-button" id="viewer-source" target="_blank" rel="noopener noreferrer" hidden>Проект на Dribbble</a>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
