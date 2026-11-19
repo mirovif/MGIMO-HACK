@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T13:18:27.179Z",
+  "title": "Campus OS",
+  "extensions": {
+    "breakpoints": [
+      { "name": "compact-navigation", "value": "800px" },
+      { "name": "compact-comparison", "value": "700px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Панель сравнения",
+      "kind": "nav",
+      "description": "Выбранная главная отмечена нижней линией.",
+      "html": "<nav class=\"ds-switcher\" aria-label=\"Сравнение концептов\"><a href=\"?concept=01\" aria-current=\"page\">Концепт 01</a><a href=\"?concept=02\">Концепт 02</a></nav>",
+      "css": ".ds-switcher { display:flex; background:#151719; font:500 13px/1.2 system-ui,sans-serif; } .ds-switcher a { display:grid; min-height:44px; place-items:center; padding-inline:1.1rem; color:#b7c1c3; text-decoration:none; border-block:2px solid transparent; } .ds-switcher a[aria-current] { color:#fff; border-bottom-color:#f1f3ed; } .ds-switcher a:hover { color:#fff; background:#2c3134; } .ds-switcher a:focus-visible { outline:2px solid #fff; outline-offset:-4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Пять визуальных направлений одного кампуса",
+    "overview": "Концепты используют общее видео, навигацию и редакционный материал. Концепт 03 сочетает плакатную композицию и палитру 04 с акцентным шрифтом 02."
+  }
+}

@@ -1,0 +1,165 @@
+body {
+  --paper: #e2dfd4;
+  --ink: #0d0a07;
+  --accent: #b41413;
+  --red-light: #ce4542;
+  --rule: #636363;
+  --hero-ink: #f0f0f0;
+  --footer-bg: #e2dfd4;
+  --footer-ink: #0d0a07;
+  --gutter: clamp(1.25rem, 4.6vw, 5.6rem);
+  --measure: 97rem;
+  --body-font: 'Golos Text';
+  --display-font: 'Oswald';
+}
+
+.architectural-hero {
+  align-items: end;
+  --video-position: 49% 47%;
+  background: #030303;
+}
+.architectural-hero .hero-media { filter: grayscale(1) contrast(1.14) brightness(.87); }
+.architectural-hero::after {
+  background: linear-gradient(180deg, #030303df 0%, #03030312 32%, #03030316 46%, #03030393 70%, #030303eb 100%);
+}
+.architectural-hero .site-header {
+  min-block-size: 77px;
+  border-bottom: 1px solid #f0f0f061;
+}
+.architectural-hero .wordmark {
+  font: 600 clamp(1.3rem, 2vw, 1.8rem)/1.1 var(--display-font), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .015em;
+}
+.architectural-hero .wordmark span { color: #cfcfcf; }
+.architectural-hero .hero-title {
+  align-self: end;
+  width: min(calc(100% - 2 * var(--gutter)), var(--measure));
+  margin: 0 auto clamp(2.9rem, 9vh, 7rem);
+  font-size: clamp(3.1rem, 9.2vw, 10rem);
+  font-weight: 700;
+  line-height: .98;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+}
+.architectural-hero .hero-title span { display: block; }
+.blueprint {
+  width: min(calc(100% - 2 * var(--gutter)), var(--measure));
+  margin-inline: auto;
+}
+.blueprint h2 {
+  font-size: clamp(3rem, 6.5vw, 7.25rem);
+  letter-spacing: -.032em;
+  text-transform: uppercase;
+  font-weight: 650;
+}
+.wide-grid { display: grid; grid-template-columns: 7fr 5fr; gap: clamp(1.5rem, 6vw, 7rem); }
+.introduction { padding-block: clamp(4rem, 9vw, 9rem) clamp(3.75rem, 7vw, 7.5rem); }
+.intro-text {
+  align-items: end;
+  padding-block: clamp(1.1rem, 2.5vw, 2.6rem) clamp(2rem, 5vw, 5rem);
+  border-top: 1px solid var(--ink);
+}
+.intro-text p { font-size: clamp(1rem, 1.5vw, 1.3rem); max-inline-size: 44ch; }
+.introduction figure { background: #404040; }
+.introduction img {
+  aspect-ratio: 2.65;
+  object-position: center 47%;
+  filter: grayscale(1) contrast(1.14);
+}
+
+.curriculum h2, .news-register h2 { padding-bottom: clamp(1.2rem, 3.2vw, 3rem); }
+.program-register li {
+  display: grid;
+  grid-template-columns: 1.1fr 2.15fr 2.2fr;
+  align-items: baseline;
+  gap: clamp(1.1rem, 2.8vw, 3rem);
+  padding-block: clamp(1.2rem, 3vw, 2.8rem);
+  border-top: 1px solid var(--rule);
+}
+.program-register li:last-child { border-bottom: 1px solid var(--rule); }
+.program-level { color: var(--accent); font-size: .87rem; font-weight: 650; }
+.program-register h3, .student-life h3 { font-size: clamp(1.9rem, 3.2vw, 3.55rem); font-weight: 600; }
+.program-register p { max-width: 46ch; }
+.student-life {
+  grid-template-columns: 5fr 7fr;
+  align-items: center;
+  margin-top: clamp(2rem, 4.5vw, 4.5rem);
+}
+.student-life p { max-width: 42ch; margin-top: 1rem; }
+.student-life img { aspect-ratio: 2.3; object-position: center 55%; filter: grayscale(1) contrast(.96); }
+
+.news-register { padding-block: clamp(4.5rem, 9vw, 9rem); }
+.news-layout { display: grid; grid-template-columns: 7fr 5fr; gap: clamp(1rem, 3.3vw, 3.5rem); }
+.news-lead img { aspect-ratio: 1.85; filter: grayscale(1) contrast(1.14); object-position: center 60%; }
+.news-lead h3 { font-size: clamp(2.2rem, 4.1vw, 4.4rem); max-width: 19ch; }
+.news-index { align-self: stretch; display: grid; }
+.news-index article { border-top: 1px solid var(--rule); padding-block: .8rem 1.8rem; }
+.news-index h3 { font-size: clamp(1.7rem, 2.8vw, 2.65rem); }
+.story-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  font-size: .83rem;
+  font-weight: 550;
+  margin-block: .9rem;
+}
+.story-meta span { color: var(--accent); }
+.news-layout article p { margin-top: .85rem; max-width: 42ch; }
+
+.technical-calendar {
+  padding-block: clamp(3.6rem, 7vw, 7rem);
+  background: #261e1b;
+  color: var(--paper);
+}
+.technical-calendar h2 { margin-bottom: clamp(1.7rem, 4vw, 3.5rem); }
+.technical-calendar li {
+  display: grid;
+  grid-template-columns: minmax(115px, 1.1fr) minmax(0, 2.7fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 3rem);
+  border-top: 1px solid #e2dfd469;
+  padding-block: clamp(1rem, 2.8vw, 2.8rem);
+}
+.technical-calendar li:last-child { border-bottom: 1px solid #e2dfd469; }
+.technical-calendar h3 { font-size: clamp(1.5rem, 2.7vw, 2.9rem); font-weight: 600; margin-bottom: .45rem; }
+.event-date { display: flex; align-items: baseline; gap: .55rem; font-variant-numeric: tabular-nums; }
+.event-date strong { color: var(--red-light); font: 600 clamp(2.8rem, 5vw, 5.4rem)/1 var(--display-font), sans-serif; }
+.event-location { font-size: .87rem; }
+.event-location span { display: block; }
+
+.workshop-feature {
+  padding-block: clamp(3.8rem, 8vw, 8rem);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-width: 0;
+}
+.workshop-copy {
+  padding: clamp(1.6rem, 4.15vw, 4.2rem);
+  background: var(--accent);
+  color: #f0f0f0;
+}
+.workshop-feature h2 { font-size: clamp(2.5rem, 5vw, 5.35rem); }
+.workshop-copy p { margin-top: 1.2rem; max-width: 40ch; }
+.workshop-copy .workshop-hours { font-size: .88rem; margin-top: 2rem; font-weight: 550; }
+.workshop-feature img { block-size: 100%; min-block-size: 23rem; object-position: 60% center; filter: saturate(.64); }
+.site-footer .footer-inner { border-top: 1px solid var(--ink); padding-top: 1.8rem; }
+.site-footer { padding-top: 0; }
+
+@media (max-width: 800px) {
+  .architectural-hero { --video-position: 58% 47%; }
+  .architectural-hero .site-header { min-block-size: 60px; }
+  .architectural-hero .hero-title { font-size: clamp(3.25rem, 12vw, 6.5rem); max-width: 13ch; margin-inline: var(--gutter); }
+  .wide-grid { grid-template-columns: minmax(0, 1fr); }
+  .introduction img { aspect-ratio: 1.5; }
+  .program-register li { grid-template-columns: minmax(0, 1fr); gap: .65rem; }
+  .student-life img { aspect-ratio: 1.65; }
+  .news-layout { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .news-index article { padding-bottom: 1.35rem; }
+  .technical-calendar li { grid-template-columns: minmax(0, 1fr); gap: .8rem; }
+  .event-location span { display: inline; }
+  .event-location span + span::before { content: ' · '; }
+  .workshop-feature { grid-template-columns: minmax(0, 1fr); }
+  .workshop-feature img { min-block-size: 0; block-size: auto; aspect-ratio: 1.45; }
+}

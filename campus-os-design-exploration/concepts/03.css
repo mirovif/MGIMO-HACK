@@ -1,0 +1,15 @@
+@import './04.css';
+
+body[data-concept="03"] {
+  --display-font: "Playfair Display", Georgia, serif;
+}
+
+@media (prefers-color-scheme: light) {
+  body[data-concept="03"] {
+    --paper: #FAFAF6;
+    --ink: #2E2D2B;
+    --sheet: #E4E3DF;
+    --caption: #6A6964;
+    color-scheme: light;
+  }
+}
