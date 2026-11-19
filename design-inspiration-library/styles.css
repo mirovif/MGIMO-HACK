@@ -335,6 +335,14 @@ body:is([data-view='saved'], [data-searching='true']) .hero { display: none; }
 .analysis-section { padding-block: 13px; border-bottom: 1px solid var(--line); }
 .viewer-analysis h3 { margin: 0 0 5px; font-size: 15px; line-height: 1.25; letter-spacing: -.015em; }
 .viewer-analysis p, .viewer-techniques { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.52; overflow-wrap: anywhere; }
+.font-type { display: grid; gap: 2px; margin: 0 0 7px; font-size: 14px; line-height: 1.45; }
+.font-type dt { color: var(--muted); font-size: 12px; }
+.font-type dd { margin: 0; font-weight: 650; }
+.viewer-palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); gap: 7px; margin: 8px 0 6px; padding: 0; list-style: none; }
+.viewer-palette li { min-width: 0; text-align: center; }
+.palette-swatch { display: block; height: 31px; margin-bottom: 3px; border: 1px solid #0002; border-radius: 5px; }
+.viewer-palette code { color: var(--ink); font-size: .72rem; }
+.viewer-analysis .palette-note { font-size: 12px; }
 .font-source { display: inline-block; margin-top: 6px; color: var(--olive); text-underline-offset: 3px; font-size: 13px; }
 .viewer-techniques { display: grid; gap: 6px; padding-left: 19px; }
 .viewer-techniques li::marker { color: var(--olive); }

@@ -27,6 +27,9 @@
   const viewerDetails = get('viewer-details');
   const viewerAnalysis = get('viewer-analysis');
   const viewerTypography = get('viewer-typography');
+  const viewerFontType = get('viewer-font-type');
+  const viewerPalette = get('viewer-palette');
+  const viewerPaletteNote = get('viewer-palette-note');
   const viewerComposition = get('viewer-composition');
   const viewerTechniques = get('viewer-techniques');
   const viewerPrompt = get('viewer-prompt');
@@ -71,7 +74,7 @@
     const text = [
       reference.title, reference.description, reference.style, style?.label,
       styleAliases[reference.style], style?.aliases, ...(reference.tags || []),
-      analysis?.typography, ...(analysis?.techniques || []),
+      analysis?.fontType, analysis?.typography, ...(analysis?.techniques || []),
     ];
     return [reference.id, normalize(text.filter(Boolean).join(' '))];
   }));
@@ -343,12 +346,25 @@
     }
   }
 
-  function showAnalysis(analysis) {
+  function showAnalysis(reference) {
+    const analysis = analyses[reference.id];
     viewerAnalysis.hidden = !analysis;
     copyStatus.textContent = '';
     if (!analysis) return;
 
+    viewerFontType.textContent = analysis.fontType;
     viewerTypography.textContent = analysis.typography;
+    viewerPalette.replaceChildren(...analysis.palette.map((color) => {
+      const item = element('li');
+      const swatch = element('span', 'palette-swatch');
+      swatch.style.backgroundColor = color;
+      swatch.setAttribute('aria-hidden', 'true');
+      item.append(swatch, element('code', '', color));
+      return item;
+    }));
+    viewerPaletteNote.textContent = reference.kind === 'video'
+      ? 'Оттенки по кадру предпросмотра.'
+      : 'Оттенки по изображению.';
     viewerComposition.textContent = analysis.composition;
     viewerPrompt.textContent = analysis.prompt.join(' ');
     viewerTechniques.replaceChildren(...analysis.techniques.map((technique) => {
@@ -420,7 +436,7 @@
     setZoom(false);
     viewerTitle.textContent = reference.title;
     viewerDescription.textContent = reference.description;
-    showAnalysis(analyses[reference.id]);
+    showAnalysis(reference);
     viewerDetails.scrollTop = 0;
     viewer.scrollTop = 0;
     setStyle(viewerStyle, reference);
