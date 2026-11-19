@@ -3,6 +3,7 @@
 
   const catalog = window.REFERENCE_CATALOG;
   const styles = window.REFERENCE_STYLES;
+  const analyses = window.REFERENCE_ANALYSIS || {};
   const byId = new Map(catalog.map((reference) => [reference.id, reference]));
   const stylesById = new Map(styles.map((style) => [style.id, style]));
   const get = (id) => document.getElementById(id);
@@ -23,6 +24,14 @@
   const viewerDescription = get('viewer-description');
   const viewerStyle = get('viewer-style');
   const viewerTags = get('viewer-tags');
+  const viewerDetails = get('viewer-details');
+  const viewerAnalysis = get('viewer-analysis');
+  const viewerTypography = get('viewer-typography');
+  const viewerComposition = get('viewer-composition');
+  const viewerTechniques = get('viewer-techniques');
+  const viewerPrompt = get('viewer-prompt');
+  const viewerFontSource = get('viewer-font-source');
+  const copyStatus = get('viewer-copy-status');
   const viewerPosition = get('viewer-position');
   const viewerPrevious = get('viewer-prev');
   const viewerNext = get('viewer-next');
@@ -58,9 +67,11 @@
 
   const searchIndex = new Map(catalog.map((reference) => {
     const style = stylesById.get(reference.style);
+    const analysis = analyses[reference.id];
     const text = [
       reference.title, reference.description, reference.style, style?.label,
       styleAliases[reference.style], style?.aliases, ...(reference.tags || []),
+      analysis?.typography, ...(analysis?.techniques || []),
     ];
     return [reference.id, normalize(text.filter(Boolean).join(' '))];
   }));
@@ -332,6 +343,53 @@
     }
   }
 
+  function showAnalysis(analysis) {
+    viewerAnalysis.hidden = !analysis;
+    copyStatus.textContent = '';
+    if (!analysis) return;
+
+    viewerTypography.textContent = analysis.typography;
+    viewerComposition.textContent = analysis.composition;
+    viewerPrompt.textContent = analysis.prompt.join(' ');
+    viewerTechniques.replaceChildren(...analysis.techniques.map((technique) => {
+      const item = element('li');
+      const separator = technique.indexOf(' — ');
+      if (separator === -1) {
+        item.textContent = technique;
+      } else {
+        item.append(element('strong', '', technique.slice(0, separator)), technique.slice(separator));
+      }
+      return item;
+    }));
+    viewerFontSource.hidden = !analysis.fontSource;
+    if (analysis.fontSource) {
+      viewerFontSource.href = analysis.fontSource.url;
+      viewerFontSource.textContent = analysis.fontSource.label;
+    } else {
+      viewerFontSource.removeAttribute('href');
+      viewerFontSource.textContent = '';
+    }
+  }
+
+  async function copyPrompt() {
+    const reference = viewerReferences[viewerIndex];
+    const text = viewerPrompt.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (viewer.open && viewerReferences[viewerIndex] === reference) {
+        copyStatus.textContent = 'Промпт скопирован';
+      }
+    } catch {
+      if (!viewer.open || viewerReferences[viewerIndex] !== reference) return;
+      const range = document.createRange();
+      range.selectNodeContents(viewerPrompt);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      copyStatus.textContent = 'Текст выделен. Скопируйте его через меню браузера.';
+    }
+  }
+
   function showReference() {
     const reference = viewerReferences[viewerIndex];
     const isVideo = reference.kind === 'video';
@@ -362,6 +420,9 @@
     setZoom(false);
     viewerTitle.textContent = reference.title;
     viewerDescription.textContent = reference.description;
+    showAnalysis(analyses[reference.id]);
+    viewerDetails.scrollTop = 0;
+    viewer.scrollTop = 0;
     setStyle(viewerStyle, reference);
     viewerTags.replaceChildren(...(reference.tags || []).map((tag) => element('li', 'viewer-tag', tag)));
     viewerPosition.textContent = `${viewerIndex + 1} / ${viewerReferences.length}`;
@@ -431,6 +492,7 @@
   });
 
   get('viewer-close').addEventListener('click', () => viewer.close());
+  get('viewer-copy').addEventListener('click', copyPrompt);
   viewerPrevious.addEventListener('click', () => moveViewer(-1));
   viewerNext.addEventListener('click', () => moveViewer(1));
   viewerSave.addEventListener('click', () => toggleSaved(viewerReferences[viewerIndex], viewerSave));
