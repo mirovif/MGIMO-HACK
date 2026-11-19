@@ -1,0 +1,847 @@
+.optical {
+  --ice: #f3f7ff;
+  --mineral: #cfdbf7;
+  --cobalt: #315ce8;
+  --indigo: #20336e;
+  --rim: #829dda;
+  --step: clamp(1.25rem, 4.15vw, 5.5rem);
+  --round: clamp(3rem, 9vw, 10rem);
+  color: var(--indigo);
+  background:
+    radial-gradient(ellipse at 105% 20%, #cfdbf7 0, transparent 33%),
+    radial-gradient(ellipse at 0% 62%, #dce8ff 0, transparent 36%),
+    radial-gradient(ellipse at 95% 96%, #cfdbf7 0, transparent 26%),
+    var(--ice);
+  font-family: Manrope, Arial, sans-serif;
+}
+
+.optical h1,
+.optical h2,
+.optical h3,
+.optical p,
+.optical figure {
+  margin: 0;
+}
+
+.optical h2,
+.optical h3 {
+  letter-spacing: -.064em;
+  word-spacing: .055em;
+  line-height: 1.03;
+}
+
+.optical h2 {
+  font-size: clamp(3rem, 7.1vw, 8.6rem);
+  font-weight: 650;
+}
+
+.optical h3 {
+  font-size: clamp(1.6rem, 2.65vw, 3.2rem);
+  font-weight: 710;
+}
+
+.optical p {
+  line-height: 1.59;
+  max-width: 53ch;
+}
+
+.optical a:focus-visible,
+.optical button:focus-visible,
+.optical summary:focus-visible {
+  outline: 2px solid var(--cobalt);
+  outline-offset: 5px;
+}
+
+.optical section[id] {
+  scroll-margin-block-start: 2rem;
+}
+
+.optical .skip-link:not(:focus) {
+  clip-path: inset(50%);
+}
+
+.optic-shell,
+.optic-wrap {
+  width: min(calc(100% - 2 * var(--step)), 105rem);
+  margin-inline: auto;
+}
+
+.optical .preview-header {
+  color: var(--indigo);
+  background: transparent;
+  padding-inline: 0;
+}
+
+.optical .wordmark {
+  font-family: Manrope, Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -.045em;
+  text-transform: none;
+}
+
+.optical :is(.account-link, .menu-toggle) {
+  border-color: #829ddaae;
+  border-radius: 50rem;
+  padding-inline: 1rem;
+  color: var(--indigo);
+  background: #f3f7ff;
+}
+
+.optical #mobile-nav {
+  color: var(--indigo);
+  background: var(--ice);
+}
+
+.optic-hero {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: minmax(9rem, 1fr) auto minmax(7rem, 1.36fr);
+  align-items: center;
+  position: relative;
+  min-height: clamp(37rem, 75svh, 58rem);
+  isolation: isolate;
+}
+
+.optic-title {
+  z-index: 2;
+  grid-column: 1 / 9;
+  grid-row: 2;
+  font-size: clamp(3.1rem, 6.7vw, 8.3rem);
+  line-height: .96;
+  letter-spacing: -.078em;
+  word-spacing: .05em;
+  font-weight: 630;
+}
+
+.optic-title > span {
+  width: max-content;
+  display: block;
+  overflow: clip;
+  padding: .07em .09em .13em .03em;
+  margin: -.07em -.09em -.13em -.03em;
+}
+
+.optic-title > span > span {
+  display: block;
+}
+
+.optic-title > span:last-child {
+  color: var(--cobalt);
+}
+
+.optic-stage {
+  position: relative;
+  align-self: stretch;
+  grid-column: 7 / -1;
+  grid-row: 1 / -1;
+  margin: 1rem 0 1rem -5%;
+}
+
+.optic-stage .hero-media,
+.optic-photo > img {
+  display: block;
+  background: var(--mineral);
+  border-radius: 1rem var(--round);
+  box-shadow: 0 2rem 3.5rem -3.6rem #20336e, 0 .4rem 1.5rem -.8rem #20336e45;
+}
+
+.optic-stage .hero-media {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+
+.optic-stage .hero-media :is(video, img) {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.optic-stage video {
+  opacity: 0;
+}
+
+.optic-stage video.is-playing {
+  opacity: 1;
+}
+
+.optic-lens {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 41% 39% 42% 43% / 49% 43% 49% 43%;
+  aspect-ratio: 1.25;
+  box-shadow: 0 1.3rem 3rem -1.1rem #20336ea8;
+}
+
+.optic-lens::before,
+.optic-lens::after,
+.optic-lens canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.optic-lens canvas {
+  display: block;
+  opacity: 0;
+}
+
+.optic-lens::before,
+.optic-lens::after {
+  content: "";
+  border-radius: inherit;
+}
+
+.optic-lens::before {
+  background:
+    linear-gradient(133deg, #ffffff9c, #cfdbf735 29%, transparent 52%, #adcaff53 74%, #ffffffb3),
+    rgb(235 244 255 / .13);
+  backdrop-filter: blur(3px) brightness(1.14);
+  box-shadow: inset 0 2px 3px #fff, inset 0 -3px 6px #d7eaffaa, inset 0 0 17px #829dda8c;
+}
+
+.optic-lens[data-optic="ready"]::before {
+  visibility: hidden;
+}
+
+.optic-lens[data-optic="ready"] canvas {
+  opacity: 1;
+}
+
+.optic-lens::after {
+  inset: 11% 14%;
+  width: auto;
+  height: auto;
+  border-top: 1px solid #fff9;
+  border-bottom: 1px solid #f3f7ff55;
+  mask-image: linear-gradient(155deg, #000 13%, transparent 45%, transparent 62%, #000);
+}
+
+.hero-lens {
+  width: clamp(12rem, 22vw, 24rem);
+  left: -6%;
+  bottom: 10%;
+}
+
+.optic-back-top span {
+  transition: transform .26s cubic-bezier(.2,.8,.2,1);
+}
+
+.optic-intro {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  grid-template-rows: minmax(4rem, 1fr) auto minmax(3rem, .8fr);
+  gap: 0 clamp(2rem, 6.5vw, 8.2rem);
+  align-items: center;
+  padding-block: clamp(6rem, 12vw, 13rem);
+}
+
+.optic-intro-copy {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.optic-intro h2 {
+  max-width: 9ch;
+}
+
+.optic-intro p,
+.optic-campus-copy > p:first-of-type {
+  margin-top: 1.55rem;
+  font-size: clamp(1.03rem, 1.42vw, 1.35rem);
+}
+
+.optic-photo {
+  position: relative;
+}
+
+.optic-photo > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.optic-intro-view {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  aspect-ratio: 1.125;
+}
+
+.optic-intro-view > img {
+  border-radius: var(--round) 1rem;
+}
+
+.intro-lens {
+  width: clamp(7rem, 15vw, 16rem);
+  top: 13%;
+  right: -6%;
+}
+
+.optic-education {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr);
+  gap: clamp(2.8rem, 7vw, 9.2rem);
+  align-items: start;
+  padding-block: 1rem clamp(6.2rem, 12vw, 12rem);
+}
+
+.optic-syllabus > h2 {
+  margin-bottom: clamp(2rem, 5vw, 4.8rem);
+}
+
+.optic-program {
+  border-bottom: 1px solid #829dda78;
+  padding: .8rem .1rem 1.1rem;
+  margin-top: .38rem;
+}
+
+.optic-program summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content 1.05rem;
+  align-items: baseline;
+  gap: clamp(.5rem, 1.3vw, 1.25rem);
+  list-style: none;
+  cursor: pointer;
+  transition: color .2s ease;
+}
+
+.optic-program summary::-webkit-details-marker {
+  display: none;
+}
+
+.optic-program summary > span {
+  font-size: clamp(1.45rem, 2.65vw, 2.85rem);
+  font-weight: 680;
+  line-height: 1.02;
+  letter-spacing: -.068em;
+}
+
+.optic-program summary > small,
+.optic-meta {
+  font-size: .82rem;
+  font-weight: 680;
+}
+
+.optic-program summary::after {
+  content: "+";
+  justify-self: end;
+  line-height: .5;
+  font-size: 1.3rem;
+}
+
+.optic-program[open] summary::after {
+  content: "−";
+  color: var(--cobalt);
+}
+
+.optic-program summary:hover,
+.optic-program[open] summary > span {
+  color: var(--cobalt);
+}
+
+.optic-program p {
+  margin-block: .95rem .35rem;
+}
+
+.optic-life {
+  margin-top: clamp(2.5rem, 7.5vw, 9rem);
+}
+
+.optic-life figure {
+  aspect-ratio: 1.025;
+  margin-bottom: 1.8rem;
+}
+
+.optic-life p {
+  margin-top: .65rem;
+}
+
+.optic-news {
+  padding-bottom: clamp(6rem, 12vw, 12rem);
+}
+
+.optic-news-landscape {
+  width: min(100%, 112rem);
+  margin-inline: auto;
+  position: relative;
+  padding: 1.5rem var(--step) 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto 3rem auto;
+  align-items: end;
+}
+
+.optic-news-landscape > figure {
+  grid-column: 2 / -1;
+  grid-row: 1 / 3;
+  height: clamp(15rem, 40vw, 35rem);
+}
+
+.optic-news-landscape img {
+  object-position: 50% 62%;
+  border-radius: var(--round) 1rem 1rem 1rem;
+}
+
+.optic-news-landscape > h2 {
+  z-index: 1;
+  grid-column: 1 / -1;
+  grid-row: 2 / 4;
+  width: max-content;
+  padding: .02em .36em .14em 0;
+  color: var(--cobalt);
+  background: linear-gradient(110deg, #f3f7fff7, #f3f7ffdc 67%, #f3f7ff65);
+  border-radius: .14em .72em .72em .14em;
+  font-size: clamp(4.4rem, 12vw, 13rem);
+}
+
+.optic-news-list {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: clamp(1.5rem, 4.5vw, 5.2rem);
+  padding-top: clamp(1.5rem, 5vw, 4.8rem);
+}
+
+.optic-story > p:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .1rem .55rem;
+  margin-bottom: 1.1rem;
+  color: #3460ba;
+}
+
+.optic-story > p:last-child {
+  margin-top: 1rem;
+}
+
+.optic-story:first-child h3 {
+  font-size: clamp(1.85rem, 3.6vw, 4.15rem);
+}
+
+.optic-events {
+  display: grid;
+  grid-template-columns: minmax(0, .62fr) minmax(0, 1.38fr);
+  gap: clamp(2rem, 6vw, 7.5rem);
+  align-items: start;
+  padding-block: 0 clamp(6rem, 12vw, 12rem);
+}
+
+.optic-events > h2 {
+  font-size: clamp(3rem, 6.35vw, 7.45rem);
+}
+
+.optic-events ol {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.optic-event {
+  display: grid;
+  grid-template-columns: 5.9rem minmax(0, 1fr) minmax(6rem, .42fr);
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  align-items: start;
+  position: relative;
+  padding: 1.55rem 0 1.4rem;
+  isolation: isolate;
+}
+
+.optic-event::before {
+  content: "";
+  position: absolute;
+  inset: 0 -1rem;
+  border-radius: .7rem 2.8rem;
+  background: linear-gradient(125deg, #f3f7ffea, #cfdbf7a2);
+  box-shadow: inset 0 1px #fff;
+  opacity: 0;
+  translate: -1rem 0;
+  z-index: -1;
+  transition: opacity .32s ease, translate .32s ease;
+}
+
+.optic-event:hover::before {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.optic-event-date,
+.optic-event-place {
+  display: grid;
+  gap: .15rem;
+}
+
+.optic-event-date span:first-child {
+  font-size: clamp(2.65rem, 3.7vw, 4.5rem);
+  line-height: .87;
+  letter-spacing: -.096em;
+  color: var(--cobalt);
+}
+
+.optic-event h3 {
+  font-size: clamp(1.32rem, 2.15vw, 2.5rem);
+  margin-bottom: .45rem;
+}
+
+.optic-event-place {
+  font-size: .83rem;
+  font-weight: 680;
+  padding-block-start: .14rem;
+}
+
+.optic-campus {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: 1fr minmax(4rem, auto) 1fr;
+  padding-bottom: clamp(5rem, 10vw, 10rem);
+  align-items: center;
+}
+
+.optic-campus figure {
+  grid-column: 1 / 9;
+  grid-row: 1 / -1;
+  height: clamp(22rem, 52vw, 45rem);
+}
+
+.optic-campus-copy {
+  z-index: 2;
+  grid-column: 7 / -1;
+  grid-row: 2;
+  padding: clamp(1.6rem, 4.5vw, 4.8rem);
+  border-radius: .95rem 5rem .95rem 5rem;
+  background: linear-gradient(130deg, #f9fbfffa, #e4edfffa 58%, #cfdbf7);
+  box-shadow: inset 0 1px #fff, inset 0 -2px #829dda60, 0 1.5rem 4rem -2.5rem #20336e9c;
+}
+
+.optic-campus h2 {
+  font-size: clamp(2.6rem, 4.7vw, 6.6rem);
+}
+
+.optic-campus-copy > .optic-meta {
+  margin-top: 1.55rem;
+}
+
+.optic-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem 2rem;
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+  color: var(--indigo);
+}
+
+.optic-footer-brand {
+  font-size: clamp(2rem, 4vw, 4.6rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -.09em;
+  text-decoration: none;
+}
+
+.optic-footer > p {
+  font-size: .83rem;
+}
+
+.optic-back-top {
+  display: inline-flex;
+  gap: .6em;
+  align-items: center;
+  text-underline-offset: .28em;
+}
+
+.optic-back-top:hover span {
+  transform: translateY(-.18em);
+}
+
+@media (min-width: 841px) and (max-width: 1150px) {
+  .optic-events {
+    grid-template-columns: minmax(0, .6fr) minmax(0, 1.4fr);
+    gap: 2.2rem;
+  }
+
+  .optic-events > h2 {
+    font-size: clamp(2.9rem, 6.1vw, 7rem);
+  }
+
+  .optic-event {
+    grid-template-columns: 3.9rem minmax(0, 1fr) minmax(5rem, .45fr);
+  }
+}
+
+@media (max-width: 840px) {
+  .optical {
+    --round: clamp(2.6rem, 10vw, 5.5rem);
+  }
+
+  .optic-hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.35rem;
+    min-height: 0;
+    padding-top: clamp(2.3rem, 7vw, 4.4rem);
+  }
+
+  .optic-title {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: clamp(2.82rem, 10.35vw, 5.9rem);
+    line-height: .94;
+  }
+
+  .optic-stage {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+    height: clamp(17rem, 56vw, 29rem);
+  }
+
+  .hero-lens {
+    width: clamp(8.2rem, 29vw, 13.5rem);
+    left: auto;
+    right: -1.3%;
+    bottom: 6%;
+  }
+
+  .optic-intro,
+  .optic-education {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 2rem;
+  }
+
+  .optic-intro {
+    padding-block: clamp(5rem, 16vw, 7rem);
+  }
+
+  .optic-intro-copy,
+  .optic-intro-view {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .optic-intro h2 {
+    max-width: none;
+  }
+
+  .optic-intro-view {
+    width: min(100%, 32rem);
+    height: auto;
+    aspect-ratio: 1.32;
+  }
+
+  .intro-lens {
+    right: -2%;
+  }
+
+  .optic-education {
+    gap: 3rem;
+  }
+
+  .optic-life {
+    width: min(100%, 34rem);
+    margin: 0;
+  }
+
+  .optic-life figure {
+    aspect-ratio: 1.44;
+    margin-bottom: 1.25rem;
+  }
+
+  .optic-news-landscape {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: auto 2rem auto;
+    padding-top: 0;
+  }
+
+  .optic-news-landscape > figure {
+    grid-column: 1 / -1;
+  }
+
+  .optic-news-list {
+    grid-template-columns: 1fr;
+    gap: 2.35rem;
+  }
+
+  .optic-story > p:first-child {
+    margin-bottom: .6rem;
+  }
+
+  .optic-story > p:last-child {
+    margin-top: .6rem;
+  }
+
+  .optic-events {
+    grid-template-columns: 1fr;
+    gap: 1.65rem;
+  }
+
+  .optic-campus {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: auto 2.6rem auto;
+  }
+
+  .optic-campus figure {
+    grid-column: 1 / -1;
+    grid-row: 1 / 3;
+    height: auto;
+    aspect-ratio: 1.3;
+  }
+
+  .optic-campus-copy {
+    grid-column: 2 / -1;
+    grid-row: 2 / 4;
+    border-radius: .85rem 3rem;
+  }
+
+  .optic-footer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .95rem 1rem;
+  }
+
+  .optic-footer p {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .optic-back-top {
+    justify-self: end;
+    grid-row: 1;
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 520px) {
+  .optic-program summary {
+    grid-template-columns: minmax(0, 1fr) 1.05rem;
+    gap: .3rem .7rem;
+  }
+
+  .optic-program summary::after {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .optic-event {
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+    gap: .65rem .85rem;
+    padding-block: .85rem;
+  }
+
+  .optic-event-place {
+    grid-column: 2;
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+  }
+
+  .optic-campus-copy {
+    grid-column: 1 / -1;
+    margin-inline-start: .9rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .optic-title > span > span {
+    animation: optic-type-in .94s cubic-bezier(.17,.8,.2,1) both;
+  }
+
+  .optic-title > span:nth-child(2) > span {
+    animation-delay: 85ms;
+  }
+
+  .optic-title > span:nth-child(3) > span {
+    animation-delay: 165ms;
+  }
+
+  .optic-stage {
+    animation: optic-stage-in 1.15s cubic-bezier(.18,.65,.24,1) both;
+  }
+
+  .hero-lens {
+    animation: optic-lens-in 1.2s .16s cubic-bezier(.1,.65,.25,1) both;
+  }
+
+  @supports (animation-timeline: view()) {
+    .optic-intro-view > img {
+      animation: optic-courtyard auto ease-out both;
+      animation-timeline: view();
+      animation-range: entry 2% cover 34%;
+    }
+
+    .optic-news-landscape figure {
+      animation: optic-news-fold auto linear both;
+      animation-timeline: view();
+      animation-range: entry 6% cover 44%;
+    }
+
+    .optic-campus-copy {
+      animation: optic-campus-glide auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 31%;
+    }
+
+    .optic-footer-brand {
+      animation: optic-end auto linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 99%;
+    }
+  }
+}
+
+@keyframes optic-type-in {
+  from { transform: translateY(110%) scaleY(.86); }
+  to { transform: none; }
+}
+
+@keyframes optic-stage-in {
+  from { clip-path: inset(3% 0 7% 8% round 1rem var(--round)); }
+  to { clip-path: inset(-17% -12% -17% -12% round 1rem var(--round)); }
+}
+
+@keyframes optic-lens-in {
+  from { transform: translate(12%, 12%) scale(.74) rotate(6deg); opacity: .15; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes optic-courtyard {
+  from { clip-path: inset(4% 21% 10% 0 round var(--round) 1rem); }
+  to { clip-path: inset(0 round var(--round) 1rem); }
+}
+
+@keyframes optic-news-fold {
+  from { clip-path: polygon(7% 15%, 100% 0, 100% 100%, 7% 80%); }
+  to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+@keyframes optic-campus-glide {
+  from { translate: .8rem 2.35rem; }
+  to { translate: 0 0; }
+}
+
+@keyframes optic-end {
+  from { transform: translateY(.3em) scaleX(.94); transform-origin: left; opacity: .75; }
+  to { transform: none; transform-origin: left; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .optical *, .optical *::before, .optical *::after {
+    animation: none;
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .optic-lens {
+    display: none;
+  }
+}

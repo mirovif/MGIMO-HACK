@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus OS · Сравнение дизайнов</title>
+  <link rel="stylesheet" href="../fonts.css">
+  <link rel="stylesheet" href="./viewer.css">
+  <script type="module" src="./viewer.mjs"></script>
+</head>
+<body>
+  <header class="comparison" id="comparison">
+    <div class="toolbar">
+      <div class="identity"><strong>Campus OS</strong><span id="variant-name">Оригинал</span></div>
+      <div class="tabs" role="tablist" aria-label="Варианты дизайна"></div>
+      <div class="actions">
+        <button type="button" id="palette-trigger" aria-expanded="false" aria-controls="palette">Цвета</button>
+        <button type="button" id="fullscreen" aria-label="На весь экран" title="На весь экран"><span aria-hidden="true">⛶</span></button>
+        <button type="button" id="hide" aria-label="Скрыть панель сравнения" title="Скрыть панель сравнения"><span aria-hidden="true">⌃</span></button>
+      </div>
+    </div>
+    <section class="palette" id="palette" aria-label="Палитры пяти дизайнов" hidden></section>
+  </header>
+  <main class="stage" id="stage" aria-label="Просмотр дизайнов"></main>
+  <button type="button" class="restore" id="restore" aria-controls="comparison" hidden>Показать сравнение</button>
+  <noscript><p>Для сравнения дизайнов включите JavaScript. <a href="../home.html?concept=04">Открыть оригинал</a>.</p></noscript>
+</body>
+</html>
