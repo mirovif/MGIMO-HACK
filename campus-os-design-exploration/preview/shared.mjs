@@ -23,11 +23,11 @@ export function navigationLinks() {
   return navigation.map(([id, label]) => `<a href="#${id}">${label}</a>`).join('');
 }
 
-export function header() {
+export function header(siteName) {
   return `
     <a class="skip-link" href="#content">К содержанию</a>
     <div class="preview-header">
-      <a class="wordmark" href="#top" aria-label="Campus OS, к началу страницы">Campus<span> OS</span></a>
+      <a class="wordmark" href="#top" aria-label="${siteName ?? 'Campus OS'}, к началу страницы">${siteName ?? 'Campus<span> OS</span>'}</a>
       <nav class="desktop-nav" aria-label="Основная навигация">${navigationLinks()}</nav>
       <button class="account-link" type="button" aria-disabled="true">Личный кабинет</button>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav">Меню</button>

@@ -105,34 +105,6 @@ function makeArtTemplate(model, keep) {
   return batches;
 }
 
-function makeChromeEmblem(model) {
-  const template = makeArtTemplate(model, () => true);
-  for (const batch of template) {
-    const original = batch.finish;
-    if (/ceramic|graphite/i.test(original.name)) {
-      const enamel = new THREE.MeshPhysicalMaterial({
-        name: original.name,
-        color: original.color.clone().lerp(new THREE.Color(0x293963), .22),
-        metalness: original.metalness,
-        roughness: original.roughness,
-        envMapIntensity: 1.95,
-        clearcoat: .87,
-        clearcoatRoughness: .16,
-        transparent: true,
-      });
-      original.dispose();
-      batch.finish = enamel;
-    } else {
-      original.envMapIntensity = 2.22;
-      if (/titanium|platinum|alloy/i.test(original.name)) {
-        original.emissive.setHex(0x5b77b3);
-        original.emissiveIntensity = .17;
-      }
-    }
-  }
-  return template;
-}
-
 function makeOrbitalCrystal() {
   const model = new THREE.Group();
   const violet = new THREE.MeshPhysicalMaterial({
@@ -241,7 +213,7 @@ function makeArt(node, template, color, size) {
   const tint = new THREE.Color(color);
   for (const { geometry, finish } of template) {
     const material = finish.clone();
-    material.color.lerp(tint, node.type === 'degree' ? .035 : .12);
+    material.color.lerp(tint, .12);
     materials.push(material);
     group.add(new THREE.Mesh(geometry, material));
   }
@@ -697,10 +669,9 @@ export async function createUniverseScene(canvas, graph, handlers) {
     renderer.dispose();
     throw error;
   }
-  const [chrome, constellation, programModel] = models;
+  const [gyroscope, constellation, programModel] = models;
   const crystal = makeOrbitalCrystal();
   const templates = {
-    degree: makeChromeEmblem(chrome.scene),
     planet: makeArtTemplate(programModel.scene, (name) => !/satellites|tethers/i.test(name)),
     direction: crystal,
     school: makeArtTemplate(constellation.scene, (name) => /hub|inlay/i.test(name)),
@@ -714,10 +685,18 @@ export async function createUniverseScene(canvas, graph, handlers) {
   const pointBatches = [];
   const schoolObjects = [];
   const glowGeometry = new THREE.PlaneGeometry(1, 1);
-  const root = makeArt(graph.root, templates.degree, 0xa3b8ee, 5.75);
-  root.pitch = -.24;
-  root.yaw = -.58;
-  root.roll = -.16;
+  const root = makeArt(graph.root, [], 0xa3b8ee, 5.75);
+  // The rotating rings and satellites fit inside a 4.73-unit diameter about the authored pivot.
+  gyroscope.scene.scale.setScalar(1 / 4.73);
+  root.group.add(gyroscope.scene);
+  const gyroscopeMixer = new THREE.AnimationMixer(gyroscope.scene);
+  gyroscopeMixer.clipAction(gyroscope.animations[0]).play();
+  const gyroscopeFinishes = new Map();
+  gyroscope.scene.traverse((object) => {
+    if (!object.isMesh) return;
+    const { material } = object;
+    gyroscopeFinishes.set(material, { opacity: material.opacity, transparent: material.transparent });
+  });
   root.origin.set(.5, .03, 2.1);
   root.weight = 1;
   root.glow = makeGlow(glowGeometry, 0x818ccd);
@@ -978,12 +957,25 @@ export async function createUniverseScene(canvas, graph, handlers) {
       if (node.id === highlight) size *= 1.19;
       if (!isOverview && node.type === 'degree') size *= .81;
       item.group.scale.setScalar(THREE.MathUtils.lerp(item.group.scale.x, size, ease));
-      item.group.rotation.set(
-        item.pitch + Math.sin(time * item.rate) * .045,
-        item.yaw + Math.sin(time * item.rate * .83) * .08,
-        item.roll + Math.sin(time * item.rate * .37) * .045,
-      );
+      if (node.type !== 'degree') {
+        item.group.rotation.set(
+          item.pitch + Math.sin(time * item.rate) * .045,
+          item.yaw + Math.sin(time * item.rate * .83) * .08,
+          item.roll + Math.sin(time * item.rate * .37) * .045,
+        );
+      }
       for (const material of item.materials) material.opacity = item.weight;
+    }
+    if (root.group.visible) {
+      const weight = root.weight > .995 ? 1 : root.weight;
+      for (const [material, finish] of gyroscopeFinishes) {
+        const transparent = finish.transparent || weight < 1;
+        if (material.transparent !== transparent) {
+          material.transparent = transparent;
+          material.needsUpdate = true;
+        }
+        material.opacity = finish.opacity * weight;
+      }
     }
     const focalArtifact = objects.get(selection.id);
     focusGlow.visible = selection.type === 'direction' || selection.type === 'program';
@@ -1175,6 +1167,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
     updateCamera(ease);
     if (pointer && !gesture) sendHover(hitTest(pointer, 'mouse'));
     updateArt(ease, keyboardHighlight ?? hovered);
+    if (!reduced.matches && root.group.visible) gyroscopeMixer.update(delta);
     renderer.render(world, camera);
     if (!reduced.matches) {
       slowFrames = interval > .032 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
@@ -1193,7 +1186,10 @@ export async function createUniverseScene(canvas, graph, handlers) {
 
   function local(event) {
     const bounds = canvas.getBoundingClientRect();
-    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    return {
+      x: (event.clientX - bounds.left) * width / (bounds.width || width),
+      y: (event.clientY - bounds.top) * height / (bounds.height || height),
+    };
   }
 
   function setZoom(value) {
@@ -1323,6 +1319,8 @@ export async function createUniverseScene(canvas, graph, handlers) {
       cancelAnimationFrame(frame);
       events.abort();
       observer.disconnect();
+      gyroscopeMixer.stopAllAction();
+      gyroscopeMixer.uncacheRoot(gyroscope.scene);
       const geometries = new Set();
       const materials = new Set();
       world.traverse((object) => {
@@ -1331,6 +1329,11 @@ export async function createUniverseScene(canvas, graph, handlers) {
       });
       for (const material of materials) material.dispose();
       for (const geometry of geometries) geometry.dispose();
+      const textures = new Set([...gyroscopeFinishes.keys()].map((material) => material.map).filter(Boolean));
+      for (const texture of textures) {
+        texture.dispose();
+        texture.source.data?.close?.();
+      }
       for (const template of new Set(Object.values(templates))) {
         for (const { finish } of template) finish.dispose();
       }

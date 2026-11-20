@@ -2,10 +2,11 @@ import { site, picture, date, header, videoMarkup, startPage } from './shared.mj
 import { bookletMarkup, mountBooklet } from '../education-universe/booklet.mjs';
 
 const { identity, education, news, events, highlights } = site;
+const siteName = 'UTRET';
 
 document.body.innerHTML = `
   <header class="relief-hero" id="top">
-    ${header()}
+    ${header(siteName)}
     <div class="relief-stage">
       <div class="relief-film">${videoMarkup()}</div>
       <h1 class="relief-title">
@@ -122,7 +123,7 @@ document.body.innerHTML = `
       <p>${site.disclaimer}</p>
       <a href="#top">К началу <span aria-hidden="true">↑</span></a>
     </div>
-    <a class="relief-footer-mark" href="#top" aria-label="Campus OS, к началу страницы">Campus OS</a>
+    <a class="relief-footer-mark" href="#top" aria-label="${siteName}, к началу страницы">${siteName}</a>
   </footer>`;
 
 for (const link of document.querySelectorAll('.preview-header a[href="#education"]')) {

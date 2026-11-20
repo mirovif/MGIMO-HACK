@@ -216,7 +216,7 @@ export function mountEducationUniverse(section) {
     buttons[Math.max(0, Math.min(next, buttons.length - 1))]?.focus();
   }, listener);
   canvas.addEventListener('pointermove', (event) => {
-    const rect = canvas.getBoundingClientRect();
+    const rect = tooltip.parentElement.getBoundingClientRect();
     const x = Math.max(6, Math.min(event.clientX - rect.x + 13, rect.width - tooltip.offsetWidth - 9));
     const y = Math.max(6, Math.min(event.clientY - rect.y + 16, rect.height - tooltip.offsetHeight - 9));
     tooltip.style.transform = `translate(${x}px, ${y}px)`;
