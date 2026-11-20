@@ -12,7 +12,7 @@
 .student-id-scene {
   --book-rest-offset: 24%;
   width: 100%;
-  aspect-ratio: 3.13;
+  aspect-ratio: 2.92;
   container-type: inline-size;
   position: relative;
   perspective: 900px;
@@ -25,8 +25,8 @@
   z-index: -1;
   inset: 78% -8% -23%;
   background:
-    radial-gradient(ellipse at 59% 48%, #5844726b, transparent 51%),
-    radial-gradient(ellipse closest-side, #694d9270, transparent 95%);
+    radial-gradient(ellipse at 59% 48%, #070b17ab, transparent 58%),
+    radial-gradient(ellipse closest-side, #0a1121b8, transparent 95%);
   filter: blur(9px);
   transform: scaleX(.93) rotate(-1deg);
   pointer-events: none;
@@ -47,18 +47,17 @@
 }
 
 .student-id-leather {
-  --micrograin: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20128%20128'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.8'%20numOctaves='3'%20seed='18'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Cpath%20fill='%23556781'%20filter='url(%23n)'%20d='M0%200h128v128H0z'/%3E%3C/svg%3E");
+  --micrograin: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20128%20128'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.43'%20numOctaves='4'%20seed='18'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Cpath%20fill='%23556781'%20filter='url(%23n)'%20d='M0%200h128v128H0z'/%3E%3C/svg%3E");
   display: grid;
   border-radius: clamp(4px, 1cqw, 9px);
-  background: #292642;
+  background: #171c32;
   background-image:
-    radial-gradient(ellipse at 20% 5%, #ada0d36b, transparent 64%),
-    linear-gradient(140deg, #4d5178 0%, #30324f 38%, #252741 70%, #1f2237 100%);
+    radial-gradient(ellipse at 12% 7%, #51638762, transparent 66%),
+    linear-gradient(137deg, #27324d, #171f36 41%, #0d1428 83%, #090e1c);
   box-shadow:
-    inset 1px 1px 0 #d6d0e4a0,
-    inset -1px -1px 1px #211c35,
-    inset 0 0 0 1.3cqw #181b352a,
-    0 3px 2px #241a3e88;
+    inset 0 1px 1px #aebbdca0,
+    inset -1px -1px 1px #050811,
+    0 3px 4px #030610a6;
 }
 
 .student-id-leather::before {
@@ -67,8 +66,8 @@
   inset: 1px;
   border-radius: inherit;
   background: var(--micrograin) repeat center / 96px 96px;
-  opacity: .60;
-  mix-blend-mode: soft-light;
+  opacity: .78;
+  mix-blend-mode: overlay;
   pointer-events: none;
 }
 
@@ -85,8 +84,8 @@
   height: 100%;
   width: clamp(7px, 1.65cqw, 15px);
   border-radius: 73% 30% 34% 69% / 4% 2% 3% 4%;
-  background: linear-gradient(90deg, #23223d 0%, #8184a9 29%, #34334c 56%, #211d32 91%);
-  box-shadow: inset 0 1px 1px #d4c6ec80, inset 0 -1px 1px #1c172a;
+  background: linear-gradient(90deg, #0a0f20, #566380 27%, #20283d 54%, #090d19 91%);
+  box-shadow: inset 0 1px 1px #b3c0dc80, inset 0 -1px 1px #050711;
   transform: translateZ(4px);
 }
 
@@ -110,9 +109,10 @@
 .student-id-front::after {
   content: '';
   position: absolute;
-  inset: 5%;
+  inset: 1px auto 1px 1px;
+  width: 2.8%;
   border-radius: 3px;
-  box-shadow: 0 1px 0 #b8aad231, inset 0 1px 1px #191b3d7b;
+  background: linear-gradient(90deg, #9caad13d, #070c1975 57%, transparent);
   pointer-events: none;
 }
 
@@ -122,66 +122,48 @@
 
 .student-id-stamp {
   position: relative;
-  margin-inline: 6%;
-  padding-bottom: .06em;
-  background: linear-gradient(#f5e7c6 13%, #d2bd98 44%, #efe0c1 63%, #c9ac85 98%);
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 1px .6px #181629d0);
-  font: 700 clamp(5px, 2.38cqw, 25px) / 1.05 Georgia, serif;
-  letter-spacing: .085em;
+  margin-inline: 4%;
+  color: #e9bc70;
+  text-shadow: 0 -1px #7b4f20, 0 1px 1px #080c1ce0;
+  font: 700 clamp(5px, 3.02cqw, 22px) / 1.05 Georgia, serif;
+  letter-spacing: .035em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .student-id-paper {
   position: relative;
-  display: grid;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  margin: 2.7% 2.1% 2.35%;
-  padding: 5% 5.4% 4.3%;
+  margin: 2.5% 2.2%;
+  padding: 4.2% 4.6% 3.4%;
   border-radius: 2px;
-  background-color: #e9dfd0;
+  background-color: #ece1d5;
   background-image:
     repeating-linear-gradient(32deg, #aa9b7e12 0 1px, transparent 1px 15px),
     repeating-linear-gradient(-32deg, #aa9b7e14 0 1px, transparent 1px 15px),
     radial-gradient(ellipse at 43% 0%, #f5ede0, transparent 84%);
-  box-shadow: inset 0 0 0 1px #87796569, inset 0 -2px 4px #8d78664a, 0 1px 2px #000c;
-  color: #302821;
-  font: 500 clamp(4.5px, 1.03cqw, 11px) / 1.25 Arial, sans-serif;
+  box-shadow: inset 0 0 0 1px #87796569, inset 0 -2px 4px #8d78664a, 0 0 0 1px #090e20, 0 1px 2px #000c;
+  color: #211a14;
+  font: 400 clamp(4px, 1.56cqw, 10px) / 1.15 Georgia, serif;
 }
 
 .student-id-paper-title {
   display: block;
+  margin-block-end: .75em;
   color: #201a15;
   text-align: center;
-  font: 700 clamp(6px, 1.58cqw, 16px) / 1.08 Georgia, serif;
-}
-
-.student-id-identity .student-id-paper-title {
+  font: 700 clamp(5px, 2.25cqw, 16px) / 1.08 Georgia, serif;
   text-transform: uppercase;
-}
-
-.student-id-paper-title span { white-space: nowrap; }
-
-.student-id-paper-title i {
-  display: inline-block;
-  width: 15%;
-  vertical-align: .11em;
-  border-bottom: 1px solid #62574a;
+  white-space: nowrap;
 }
 
 .student-id-form {
   display: grid;
-  grid-template-columns: 28% minmax(0, 1fr);
-  gap: 7%;
-  margin-top: 6%;
-}
-
-.student-id-photo {
-  text-align: center;
-  font-weight: 700;
+  grid-template-columns: 26% minmax(0, 1fr);
+  gap: 5%;
+  align-items: center;
 }
 
 .student-id-silhouette {
@@ -189,14 +171,13 @@
   overflow: hidden;
   aspect-ratio: .77;
   border: 1px solid #665d506e;
-  background: #d1c9bd;
-  margin-bottom: .41em;
+  background: #d3c9c0;
 }
 
 .student-id-silhouette::before,
 .student-id-silhouette::after {
   position: absolute;
-  background: #9a9388;
+  background: #a39c94;
   content: '';
 }
 
@@ -210,36 +191,53 @@
   border-radius: 49% 49% 0 0;
 }
 
-.student-id-fields,
-.student-id-renewal-entry {
+.student-id-fields, .student-id-grades {
   display: grid;
-  gap: clamp(1px, .55cqw, 5px);
+  margin: 0;
+}
+
+.student-id-fields { gap: .52em; font-size: .96em; }
+.student-id-grades {
+  flex: 1;
+  align-content: space-between;
+  gap: .16em;
+  margin-block-end: .45em;
 }
 
 .student-id-entry {
   display: flex;
   align-items: baseline;
-  gap: .5em;
+  justify-content: space-between;
+  gap: .42em;
+  min-width: 0;
   white-space: nowrap;
 }
 
-.student-id-entry i {
+.student-id-entry dd {
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.student-id-fields dd {
   flex: 1;
-  border-bottom: 1px solid #665a4d85;
+  text-align: center;
+  border-block-end: 1px solid #665a4d85;
 }
 
-.student-id-entry i + span + i { flex: 0 0 8%; }
-.student-id-entry span:last-child:not(:first-child) { font-size: .95em; }
+.student-id-grades .student-id-entry { border-block-end: 1px solid #665a4d85; }
 
-.student-id-renewal {
-  gap: 8%;
-  padding-inline: 10%;
+.student-id-paper p:is(.student-id-motto, .student-id-verdict) {
+  margin: auto 0 0;
+  max-width: none;
+  padding-block-start: .65em;
+  line-height: 1.2;
+  text-align: center;
 }
 
-.student-id-renewal-entry {
-  padding-top: 3.5%;
-  border-top: 1px solid #81796a53;
-}
+.student-id-motto { font-size: 1.14em; font-style: italic; }
+.student-id-verdict { font-size: .84em; }
+.student-id-motto strong, .student-id-verdict strong { text-transform: uppercase; }
 
 @media (prefers-reduced-motion: no-preference) {
   .relief-stage:has(.student-id-experience[data-scroll-motion]) {
@@ -285,7 +283,6 @@
   .student-id-scene { --book-rest-offset: 33%; }
   .student-id-scene::before { filter: blur(5px); }
   .student-id-leather::before { background-size: 56px 56px; }
-  .student-id-stamp { font-size: clamp(5px, 2.55cqw, 15px); }
   .student-id-paper { background-size: 72px 72px, 72px 72px, auto; }
-  .student-id-entry i { border-width: .5px; }
+  .student-id-fields dd, .student-id-grades .student-id-entry { border-width: .5px; }
 }
