@@ -1,12 +1,13 @@
 import hashlib
 import hmac
 import os
+import re
 import secrets
 import time
 import unicodedata
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -80,21 +81,56 @@ class ProfileDetails(BaseModel):
     study_basis: str | None = None
 
 
+def normalize_person_name(value: str, max_length: int) -> str:
+    if any(unicodedata.category(char).startswith('C') for char in value):
+        raise ValueError('Недопустимый символ в имени.')
+    name = ' '.join(unicodedata.normalize('NFC', value).split())
+    if not 1 <= len(name) <= max_length:
+        raise ValueError(f'Имя должно содержать от 1 до {max_length} символов.')
+    return name
+
+
 class DisplayNameUpdate(BaseModel):
     model_config = ConfigDict(extra='forbid')
     display_name: str | None
 
     @field_validator('display_name')
     @classmethod
-    def normalize_name(cls, value):
+    def normalize_display_name(cls, value):
+        return normalize_person_name(value, 40) if value is not None else None
+
+
+class ProfileUpdate(DisplayNameUpdate):
+    full_name: str
+    email: EmailStr | None
+    phone: str | None
+
+    @field_validator('full_name')
+    @classmethod
+    def normalize_full_name(cls, value):
+        return normalize_person_name(value, 160)
+
+    @field_validator('email', 'phone', mode='before')
+    @classmethod
+    def trim_contact(cls, value):
+        return (value.strip() or None) if isinstance(value, str) else value
+
+    @field_validator('email')
+    @classmethod
+    def check_email_length(cls, value):
+        if value is not None and len(value) > 254:
+            raise ValueError('Почта должна содержать не более 254 символов.')
+        return value
+
+    @field_validator('phone')
+    @classmethod
+    def check_phone(cls, value):
         if value is None:
             return None
-        if any(unicodedata.category(char).startswith('C') for char in value):
-            raise ValueError('Недопустимый символ в имени.')
-        name = ' '.join(unicodedata.normalize('NFC', value).split())
-        if not 1 <= len(name) <= 40:
-            raise ValueError('Имя должно содержать от 1 до 40 символов.')
-        return name
+        digits = re.sub(r'[^0-9]', '', value)
+        if len(value) > 32 or not 7 <= len(digits) <= 15 or not re.fullmatch(r'\+?[0-9() -]+', value):
+            raise ValueError('Укажите телефон с 7–15 цифрами.')
+        return value
 
 
 @router.post('/auth/login')
@@ -137,16 +173,20 @@ def me(user=Depends(current_user)):
 @router.put('/profile/display-name')
 def update_display_name(data: DisplayNameUpdate, request: Request, user=Depends(current_user)):
     with request.app.state.engine.begin() as conn:
-        if data.display_name is None:
-            conn.execute(delete(profile_names).where(profile_names.c.user_id == user['id']))
-        else:
-            insert = postgres_insert if conn.dialect.name == 'postgresql' else sqlite_insert
-            statement = insert(profile_names).values(user_id=user['id'], display_name=data.display_name)
-            conn.execute(statement.on_conflict_do_update(
-                index_elements=[profile_names.c.user_id],
-                set_={'display_name': statement.excluded.display_name},
-            ))
+        save_display_name(conn, user['id'], data.display_name)
     return {**user, 'display_name': data.display_name}
+
+
+def save_display_name(conn, user_id, display_name):
+    if display_name is None:
+        conn.execute(delete(profile_names).where(profile_names.c.user_id == user_id))
+        return
+    insert = postgres_insert if conn.dialect.name == 'postgresql' else sqlite_insert
+    statement = insert(profile_names).values(user_id=user_id, display_name=display_name)
+    conn.execute(statement.on_conflict_do_update(
+        index_elements=[profile_names.c.user_id],
+        set_={'display_name': statement.excluded.display_name},
+    ))
 
 
 @router.get('/profile/details')
@@ -157,3 +197,17 @@ def read_profile_details(request: Request, user=Depends(current_user)) -> Profil
     details = ProfileDetails(**row) if row is not None else ProfileDetails()
     details.full_name = (details.full_name or '').strip() or user['name']
     return details
+
+
+@router.put('/profile/details')
+def update_profile_details(data: ProfileUpdate, request: Request, user=Depends(current_user)):
+    fields = data.model_dump(exclude={'display_name'})
+    with request.app.state.engine.begin() as conn:
+        save_display_name(conn, user['id'], data.display_name)
+        insert = postgres_insert if conn.dialect.name == 'postgresql' else sqlite_insert
+        statement = insert(profile_details).values(user_id=user['id'], **fields)
+        row = conn.execute(statement.on_conflict_do_update(
+            index_elements=[profile_details.c.user_id],
+            set_={field: statement.excluded[field] for field in fields},
+        ).returning(*profile_details.c)).mappings().one()
+    return {'profile': {**user, 'display_name': data.display_name}, 'details': ProfileDetails(**row)}

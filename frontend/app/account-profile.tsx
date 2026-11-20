@@ -16,12 +16,54 @@ type ProfileDetails = {
   study_basis: string | null
 }
 
+type ProfileDraft = Record<'display_name' | 'full_name' | 'phone' | 'email', string>
+
 export function AccountProfile({ user, action, onProfileChange }: {
   user: Profile; action: ReactNode; onProfileChange: (profile: Profile) => void
 }) {
   const profile = useResource<ProfileDetails>('/profile/details')
-  const details = profile.data
+  const [savedDetails, setSavedDetails] = useState<ProfileDetails>()
+  const [draft, setDraft] = useState<ProfileDraft | null>(null)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState('')
+  const details = savedDetails ?? profile.data
   const student = user.role === 'student'
+  const defaultName = user.name.split(' ')[0]
+  const fullName = details?.full_name || user.name
+
+  function edit() {
+    setError('')
+    setDraft({
+      display_name: user.display_name ?? '',
+      full_name: fullName,
+      phone: details?.phone ?? '',
+      email: details?.email ?? '',
+    })
+  }
+
+  function change(field: keyof ProfileDraft, value: string) {
+    setDraft(current => current && { ...current, [field]: value })
+  }
+
+  async function save(event: FormEvent) {
+    event.preventDefault()
+    if (!draft || pending) return
+    setPending(true)
+    setError('')
+    try {
+      const saved = await api<{ profile: Profile; details: ProfileDetails }>('/profile/details', {
+        method: 'PUT',
+        body: JSON.stringify({ ...draft, display_name: draft.display_name.trim() || null }),
+      })
+      setSavedDetails(saved.details)
+      onProfileChange(saved.profile)
+      setDraft(null)
+    } catch (error) {
+      setError(errorText(error))
+    } finally {
+      setPending(false)
+    }
+  }
 
   return (
     <Section
@@ -34,10 +76,42 @@ export function AccountProfile({ user, action, onProfileChange }: {
           <UserRound aria-hidden="true" strokeWidth={1.25} />
         </div>
         <div className={styles.identityHeading}>
-          <h2 id="profile-name" className={styles.name}>{details?.full_name || user.name}</h2>
-          <DisplayNameEditor user={user} onProfileChange={onProfileChange} />
+          <h2 id="profile-name" className={styles.name}>{fullName}</h2>
+          <p className={styles.displayName + ' muted small'}>Имя в кабинете — {user.display_name ?? defaultName}</p>
+          {details && !draft && <div>
+            <button type="button" className="text-button" onClick={edit}>
+              <Pencil size={16} aria-hidden="true" /> Редактировать профиль
+            </button>
+          </div>}
         </div>
-        <div className={styles.contacts}>
+        {draft ? <form className={'stack ' + styles.editForm} onSubmit={save} aria-label="Редактирование профиля">
+          <div className={styles.editFields}>
+            <label>Имя в кабинете
+              <input value={draft.display_name} onChange={event => change('display_name', event.target.value)}
+                maxLength={40} autoComplete="nickname" autoFocus placeholder={defaultName} disabled={pending} />
+            </label>
+            <label>ФИО
+              <input value={draft.full_name} onChange={event => change('full_name', event.target.value)}
+                maxLength={160} autoComplete="name" required disabled={pending} />
+            </label>
+            <label>Мобильный телефон
+              <input type="tel" value={draft.phone} onChange={event => change('phone', event.target.value)}
+                maxLength={32} autoComplete="tel" disabled={pending} />
+            </label>
+            <label>Email
+              <input type="email" value={draft.email} onChange={event => change('email', event.target.value)}
+                maxLength={254} autoComplete="email" disabled={pending} />
+            </label>
+          </div>
+          {error && <Problem text={error} />}
+          <div className="button-group">
+            <button className="button primary" disabled={pending || !draft.full_name.trim()}>
+              {pending ? 'Сохраняем…' : 'Сохранить'}
+            </button>
+            <button type="button" className="button secondary" disabled={pending} onClick={() => setDraft(null)}>Отмена</button>
+          </div>
+        </form> : <div className={styles.contacts}>
+          {savedDetails && <p role="status" className="small">Профиль сохранён</p>}
           <h3>Контакты</h3>
           {profile.loading && <Busy text="Загружаем контакты…" />}
           {profile.error && <Problem text={profile.error} retry={profile.reload} />}
@@ -46,7 +120,7 @@ export function AccountProfile({ user, action, onProfileChange }: {
             ['Email', details.email ?? 'Не указан'],
             ['Подразделение', student ? null : user.faculty],
           ]} />}
-        </div>
+        </div>}
       </section>
       {student && (
         <section className={'panel ' + styles.study} aria-labelledby="profile-study">
@@ -71,63 +145,6 @@ export function AccountProfile({ user, action, onProfileChange }: {
       )}
     </Section>
   )
-}
-
-function DisplayNameEditor({ user, onProfileChange }: {
-  user: Profile; onProfileChange: (profile: Profile) => void
-}) {
-  const name = user.display_name ?? user.name.split(' ')[0]
-  const [draft, setDraft] = useState<string | null>(null)
-  const [pending, setPending] = useState(false)
-  const [error, setError] = useState('')
-  const [saved, setSaved] = useState(false)
-
-  async function save(displayName: string | null) {
-    if (pending) return
-    setPending(true)
-    setError('')
-    try {
-      const profile = await api<Profile>('/profile/display-name', {
-        method: 'PUT',
-        body: JSON.stringify({ display_name: displayName }),
-      })
-      onProfileChange(profile)
-      setDraft(null)
-      setSaved(true)
-    } catch (error) {
-      setError(errorText(error))
-    } finally {
-      setPending(false)
-    }
-  }
-
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    if (draft?.trim()) void save(draft)
-  }
-
-  if (draft !== null) return <form className={'stack ' + styles.nameForm} onSubmit={submit}>
-    <label>Имя в кабинете
-      <input value={draft} onChange={event => setDraft(event.target.value)} maxLength={40}
-        autoComplete="nickname" autoFocus required disabled={pending} />
-    </label>
-    {error && <Problem text={error} />}
-    <div className="button-group">
-      <button className="button primary" disabled={pending || !draft.trim()}>{pending ? 'Сохраняем…' : 'Сохранить'}</button>
-      <button type="button" className="button secondary" disabled={pending} onClick={() => setDraft(null)}>Отмена</button>
-    </div>
-    {user.display_name && <button type="button" className="text-button" disabled={pending} onClick={() => void save(null)}>
-      Вернуть исходное имя
-    </button>}
-  </form>
-
-  return <div className={styles.displayName}>
-    <p className="muted small">Имя в кабинете — {name}</p>
-    <button type="button" className="text-button" onClick={() => { setSaved(false); setError(''); setDraft(name) }}>
-      <Pencil size={16} aria-hidden="true" /> Изменить имя
-    </button>
-    {saved && <p role="status" className="small">Имя сохранено</p>}
-  </div>
 }
 
 function ProfileFields({ fields }: { fields: [string, string | null | undefined][] }) {

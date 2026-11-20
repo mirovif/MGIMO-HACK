@@ -128,6 +128,43 @@ def test_display_name_updates_only_current_profile_and_persists(tmp_path):
         assert restarted.get('/api/profile').json() == original
 
 
+def test_profile_edit_saves_all_fields_without_changes_to_account_identity(tmp_path):
+    url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
+    endpoint = '/api/profile/details'
+    form = {'display_name': '  Мария ', 'full_name': ' Орлова   Мария Сергеевна ',
+            'email': ' new.student@example.org ', 'phone': ' +7 (901) 123-45-67 '}
+
+    with TestClient(create_app(url)) as student, TestClient(create_app(url)) as other:
+        assert student.put(endpoint, json=form).status_code == 401
+        account = login(student, 'student1')
+        other_account = login(other, 'student2')
+        original = student.get(endpoint).json()
+        other_details = other.get(endpoint).json()
+        for invalid in (
+            {'email': 'not-an-email'}, {'phone': 'номер'}, {'full_name': '  '},
+            {'user_id': other_account['id']}, {'specialization': 'Изменённая программа'},
+        ):
+            assert student.put(endpoint, json={**form, **invalid}).status_code == 422
+        assert student.get(endpoint).json() == original
+        assert student.get('/api/profile').json()['display_name'] is None
+
+        updated = student.put(endpoint, json=form)
+        assert updated.status_code == 200
+        assert updated.json()['profile'] == {**account, 'display_name': 'Мария'}
+        expected = {**original, 'full_name': 'Орлова Мария Сергеевна',
+                    'email': 'new.student@example.org', 'phone': '+7 (901) 123-45-67'}
+        assert updated.json()['details'] == expected
+        assert other.get(endpoint).json() == other_details
+
+    with TestClient(create_app(url)) as restarted:
+        assert login(restarted, 'student1')['display_name'] == 'Мария'
+        assert restarted.get(endpoint).json() == expected
+        cleared = restarted.put(endpoint, json={**form, 'display_name': None, 'phone': '', 'email': ''}).json()
+        assert cleared['profile']['display_name'] is None
+        assert cleared['details']['phone'] is None
+        assert cleared['details']['email'] is None
+
+
 def test_request_round_trip_and_restart(tmp_path):
     url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
     app = create_app(url)

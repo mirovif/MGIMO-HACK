@@ -83,16 +83,32 @@ test('UTRET opens a matching cabinet with the REU map, catalog and Comet at 360 
   }
 })
 
-test('a profile name edit updates the greeting and survives reload at 360 px', async ({ browser }) => {
+test('all four editable profile fields persist at 360 px and the display name updates the greeting', async ({ browser }) => {
   const context = await browser.newContext(mobile)
   const page = await context.newPage()
   try {
     await login(page, 'student2', 'profile')
-    await page.getByRole('button', { name: 'Изменить имя' }).click()
-    await page.getByLabel('Имя в кабинете').fill('Миша Александр')
-    await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
+    const edit = page.getByRole('button', { name: 'Редактировать профиль' })
+    const save = page.getByRole('button', { name: 'Сохранить', exact: true })
+    await edit.click()
+    const changes = [
+      ['Имя в кабинете', 'Миша Александр'],
+      ['ФИО', 'Светлов Михаил Алексеевич'],
+      ['Мобильный телефон', '+7 (900) 000-01-02'],
+      ['Email', 'profile-edit@example.org'],
+    ]
+    const original = new Map<string, string>()
+    for (const [label, value] of changes) {
+      const input = page.getByLabel(label, { exact: true })
+      original.set(label, await input.inputValue())
+      await input.fill(value)
+    }
+    await withoutOverflow(page)
+    await save.click()
     await expect(page.getByText('Имя в кабинете — Миша Александр')).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Светлов Михаил Андреевич' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Светлов Михаил Алексеевич' })).toBeVisible()
+    await expect(page.getByText('profile-edit@example.org', { exact: true })).toBeVisible()
+    await expect(page.getByText('+7 (900) 000-01-02', { exact: true })).toBeVisible()
     await withoutOverflow(page)
     await navigate(page, 'Обзор')
     const greeting = page.getByRole('heading', { name: 'Привет, Миша Александр', exact: true })
@@ -100,8 +116,18 @@ test('a profile name edit updates the greeting and survives reload at 360 px', a
     await page.reload()
     await expect(greeting).toBeVisible()
     await navigate(page, 'Профиль')
-    await page.getByRole('button', { name: 'Изменить имя' }).click()
-    await page.getByRole('button', { name: 'Вернуть исходное имя' }).click()
+    await edit.click()
+    for (const [label, value] of changes) {
+      await expect(page.getByLabel(label, { exact: true })).toHaveValue(value)
+    }
+    await page.getByLabel('ФИО', { exact: true }).fill('Несохранённое имя')
+    await page.getByRole('button', { name: 'Отмена', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Светлов Михаил Алексеевич' })).toBeVisible()
+    await edit.click()
+    for (const [label, value] of original) {
+      await page.getByLabel(label, { exact: true }).fill(value)
+    }
+    await save.click()
     await expect(page.getByText('Имя в кабинете — Михаил')).toBeVisible()
   } finally {
     await context.close()
