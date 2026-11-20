@@ -1,0 +1,10 @@
+:root {
+  --utret-paper: #141c26;
+  --utret-ink: #f4f3ef;
+  --utret-accent: #bbcedf;
+  --utret-muted: #aebdcb;
+  --utret-relief: #384552;
+  --utret-body-font: 'Golos Text', system-ui, sans-serif;
+  --utret-display-font: 'Oswald', system-ui, sans-serif;
+  --utret-serif-font: 'Cormorant Garamond', Georgia, serif;
+}

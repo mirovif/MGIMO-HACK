@@ -2,11 +2,11 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Copy, ExternalLink, MapPin, Star, TriangleAlert } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { campusMapUrl } from '../../campus-os-design-exploration/content.mjs'
 import { api, errorText, formatDate, moscowToday, shiftDate, useResource, type Grade, type Lesson, type Schedule } from './lib'
 import { Busy, Empty, External, Problem, Section } from './ui'
 
 const REA = 'https://rasp.rea.ru/'
-const MAP = 'https://in.umap.world/reu'
 
 export function LessonList({ lessons, dates = false }: { lessons: Lesson[]; dates?: boolean }) {
   if (!lessons.length) return <Empty title="На этот период занятий нет" />
@@ -108,24 +108,24 @@ export function GradesPage() {
 }
 
 export function Campus({ room }: { room?: string }) {
-  const [query, setQuery] = useState(room || '')
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   async function copy() {
+    if (!room) return
     setError('')
-    try { await navigator.clipboard.writeText(query.trim()); setCopied(true) }
+    try { await navigator.clipboard.writeText(room); setCopied(true) }
     catch { setError('Не удалось скопировать. Выделите текст в поле и скопируйте вручную.') }
   }
-  return <Section title="Кампус" text="Найдите корпус или аудиторию на интерактивной карте университета.">
-    <div className="campus-grid"><div className="panel stack">
-      <h2>Поиск аудитории</h2>
-      <label>Корпус или аудитория<input value={query} maxLength={120} onChange={event => { setQuery(event.target.value); setCopied(false) }} placeholder="Например, корпус 3, аудитория 412" /></label>
-      <p className="muted">Скопируйте название, откройте карту UMAP и вставьте его в поиск. Выберите точку назначения и проложите маршрут на карте.</p>
+  return <Section title="Карта РЭУ" text="Найдите корпус, вход или аудиторию и проложите маршрут." action={
+    <External href={campusMapUrl} className="button secondary">Открыть в UMAP</External>
+  }>
+    {room && <div className="panel campus-room">
+      <div><p className="muted small">Аудитория</p><strong>{room}</strong></div>
+      <button className="button secondary" onClick={() => void copy()}><Copy size={18} /> Скопировать для поиска</button>
       {error && <Problem text={error} />}
-      {copied && <p role="status" className="copy-status">Название скопировано</p>}
-      <div className="button-group"><button className="button secondary" onClick={() => void copy()} disabled={!query.trim()}><Copy size={18} /> Скопировать</button>
-        <External href={MAP} className="button primary">Открыть карту UMAP</External></div>
-    </div><div className="campus-display"><MapPin size={62} strokeWidth={1.4} /><strong>Кампус РЭУ</strong><span>Интерактивная карта UMAP</span></div></div>
+      {copied && <p role="status" className="copy-status">Название скопировано. Вставьте его в поиск на карте.</p>}
+    </div>}
+    <iframe className="campus-map" title="Интерактивная карта РЭУ" src={campusMapUrl} />
   </Section>
 }
 

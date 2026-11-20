@@ -6,6 +6,7 @@ const preview = await readdir(new URL('preview/', source))
 const files = [
   'content.mjs',
   'fonts.css',
+  'utret-theme.css',
   'assets/fonts',
   'assets/campus-fast.mp4',
   'assets/campus-still-fast.webp',

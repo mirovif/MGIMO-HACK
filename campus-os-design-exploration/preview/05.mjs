@@ -1,5 +1,7 @@
 import { navigation, header, videoMarkup, startPage } from './shared.mjs';
+import { campusMapUrl } from '../content.mjs';
 import { bookletMarkup, mountBooklet } from '../education-universe/booklet.mjs';
+import { educationUniverseMarkup } from '../education-universe/markup.mjs';
 import { mountEducationUniverse } from '../education-universe/universe.mjs';
 import { storyMarkup, mountStory } from './05-story.mjs';
 import { kametaMarkup, mountKameta } from './05-kameta.mjs';
@@ -29,30 +31,7 @@ document.body.innerHTML = `
 
   <main id="content" tabindex="-1">
     ${storyMarkup}
-    <section id="education-universe" class="education-universe" aria-labelledby="eu-title" data-education-universe>
-      <header class="eu-intro">
-        <h2 id="eu-title">Образовательная вселенная</h2>
-        <p>Демонстрационные данные РЭУ им. Г. В. Плеханова</p>
-      </header>
-      <div class="eu-scene">
-        <canvas data-universe-canvas aria-hidden="true"></canvas>
-        <div class="eu-tooltip" data-universe-tooltip aria-hidden="true" hidden></div>
-        <div class="eu-zoom" role="group" aria-label="Масштаб карты" data-universe-zoom hidden>
-          <button type="button" data-zoom-step="-1" aria-label="Отдалить карту"><span aria-hidden="true">−</span></button>
-          <button type="button" data-zoom-step="1" aria-label="Приблизить карту"><span aria-hidden="true">+</span></button>
-        </div>
-      </div>
-      <div class="eu-actions">
-        <p class="eu-status" role="status" data-universe-status>Загружаем каталог…</p>
-        <button type="button" data-universe-retry hidden>Повторить загрузку</button>
-        <button type="button" data-universe-map hidden>Открыть 3D-карту</button>
-      </div>
-      <nav class="eu-navigation" aria-label="Уровни образовательной вселенной">
-        <button type="button" data-universe-back hidden><span aria-hidden="true">←</span> Назад</button>
-        <ol class="eu-breadcrumbs" data-universe-breadcrumbs hidden></ol>
-      </nav>
-      <div class="eu-index" data-universe-panel></div>
-    </section>
+    ${educationUniverseMarkup}
 
     <figure id="universe-explainer" class="relief-universe-explainer relief-wrap">
       <figcaption>В UTRET <em>наглядный граф</em> показывает, как связаны факультеты, направления, программы и учебные дисциплины.</figcaption>
@@ -65,7 +44,8 @@ document.body.innerHTML = `
     <section id="university" class="relief-intro relief-wrap" aria-labelledby="relief-intro-title">
       <h2 id="relief-intro-title">Навигация</h2>
       <div class="relief-intro-copy">
-        <p><strong>Не знаешь, как добраться до нужной аудитории?</strong> UTRET построит маршрут между корпусами, покажет расстояние и время в пути, а также подскажет, куда идти. Даже в незнакомом университете найти нужное место станет проще.</p>
+        <p><strong>Как добраться до аудитории?</strong> Найди корпус, вход или кабинет на интерактивной карте РЭУ и проложи маршрут между нужными точками.</p>
+        <a class="relief-action" href="${campusMapUrl}" target="_blank" rel="noopener noreferrer">Открыть карту РЭУ</a>
       </div>
       <figure class="relief-route-preview">
         <img src="../assets/navigation-route.webp" width="321" height="375" loading="lazy" decoding="async"

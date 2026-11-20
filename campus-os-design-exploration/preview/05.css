@@ -1,14 +1,14 @@
 :root { color-scheme: dark; }
 
 body.relief {
-  --paper: #141c26;
-  --ink: #f4f3ef;
-  --accent: #bbcedf;
-  --relief-muted: #aebdcb;
-  --relief-light: #384552;
-  --body-font: 'Golos Text', sans-serif;
-  --display-font: 'Oswald', sans-serif;
-  --serif-font: 'Cormorant Garamond', Georgia, serif;
+  --paper: var(--utret-paper);
+  --ink: var(--utret-ink);
+  --accent: var(--utret-accent);
+  --relief-muted: var(--utret-muted);
+  --relief-light: var(--utret-relief);
+  --body-font: var(--utret-body-font);
+  --display-font: var(--utret-display-font);
+  --serif-font: var(--utret-serif-font);
   --relief-section-title-size: clamp(2.65rem, 5.45vw, 5.75rem);
   --relief-gutter: clamp(20px, 5.55vw, 88px);
   --relief-limit: 1600px;
@@ -386,6 +386,23 @@ body.relief {
   text-wrap: balance;
   color: var(--ink);
 }
+
+.relief-action {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  width: fit-content;
+  min-height: 46px;
+  margin-block-start: 1.15rem;
+  padding: .6rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: .35rem;
+  color: var(--accent);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.relief-action:hover { background: var(--accent); color: var(--paper); }
 
 .relief-story {
   background: #111925;

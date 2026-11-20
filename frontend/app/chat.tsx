@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle, Send, Sparkles } from 'lucide-react'
+import { MessageCircle, Send } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, errorText, type Profile } from './lib'
 import { Busy, External, Problem, Section } from './ui'
@@ -43,15 +43,17 @@ export function AssistantPage({ user }: { user: Profile }) {
 
   function submit(event: FormEvent) { event.preventDefault(); void send(input) }
 
-  return <Section title="ИИ-помощник" text="Спросите о расписании, справках или работе цифрового деканата.">
+  return <Section title="Комета" text="Помощник по расписанию, справкам и вопросам деканата.">
     <div className="panel chat">
       <div className="chat-log" role="log" aria-label="История чата" ref={log}>
-        {!turns.length && <div className="chat-intro"><span className="scenario-icon"><Sparkles size={25} /></span>
-          <h2>Чем помочь?</h2><p>Отвечаю на вопросы об учёбе и сервисах РЭУ. Ссылки на материалы вуза прикрепляю к ответам.</p>
+        {!turns.length && <div className="chat-intro">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="chat-mascot" src="/assets/kameta.webp" alt="" width={1122} height={1402} />
+          <div><h2>Чем помочь?</h2><p>К ответам по материалам РЭУ прикрепляю источник.</p></div>
           <div className="button-group">{prompts.map(prompt => <button type="button" key={prompt} className="button secondary" onClick={() => void send(prompt)}>{prompt}</button>)}</div>
         </div>}
         {turns.map((turn, index) => <article className={'chat-turn ' + turn.role} key={index}>
-          <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Campus OS'}</strong>{turn.demo && !turn.sources?.length && <span className="badge">Демонстрационный ответ</span>}</div>
+          <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Комета'}</strong>{turn.demo && !turn.sources?.length && <span className="badge">Демонстрационный ответ</span>}</div>
           <p className="pre-line">{turn.content}</p>
           {!!turn.sources?.length && <div className="chat-sources"><strong>Источники</strong>{turn.sources.map(source => <div key={source.url}>
             <External href={source.url}>{source.title}</External><p className="muted small">{source.excerpt}</p></div>)}</div>}

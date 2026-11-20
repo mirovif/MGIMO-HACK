@@ -1,5 +1,6 @@
 'use client'
 
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, ApiError, errorText, type Profile } from '../lib'
 import { Busy, Problem } from '../ui'
@@ -64,23 +65,32 @@ function Login({ onLogin }: { onLogin: (profile: Profile) => void }) {
     catch (err) { setError(errorText(err)) }
     finally { setLoading(false) }
   }
-  return <main className="login-layout">
-    <aside className="login-brand"><a href="/" className="brand-inverse">Campus OS</a><p>Деканат<br /><em>между парами.</em></p><span>РЭУ имени Г. В. Плеханова</span></aside>
-    <div className="login-main"><a href="/" className="text-link">На главную</a>
-      <h1>Войти в кабинет</h1><p>Используйте конкурсную учётную запись.</p>
-      <form className="stack" onSubmit={submit}>
-        <label>Логин<input autoComplete="username" value={login} onChange={event => setLogin(event.target.value)} required maxLength={64} /></label>
-        <label>Пароль<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required maxLength={128} /></label>
-        {error && <Problem text={error} />}
-        <button className="button primary" disabled={loading}>{loading ? 'Входим…' : 'Войти'}</button>
-        {loading && <div className="visually-hidden"><Busy text="Проверяем данные" /></div>}
-      </form>
-      <div className="demo-logins"><strong>Тестовые логины</strong><div>
-        <button type="button" onClick={() => setLogin('student1')}>Студент 1</button>
-        <button type="button" onClick={() => setLogin('student2')}>Студент 2</button>
-        <button type="button" onClick={() => setLogin('staff')}>Сотрудник</button>
-      </div><p>Пароль организатор выдаёт отдельно. Для локального запуска он указан в README.</p></div>
-      <small>Неофициальный конкурсный прототип</small>
-    </div>
-  </main>
+  return <div className="login-page">
+    <header className="login-header">
+      <a href="/" className="utret-brand">UTRET</a>
+      <a href="/" className="text-link"><ArrowLeft size={17} aria-hidden="true" /> На главную</a>
+    </header>
+    <main className="login-layout">
+      <div className="login-campus">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/assets/campus-still-fast.webp" alt="" width={960} height={540} />
+        <p>РЭУ имени<br /><em>Г. В. Плеханова</em></p>
+      </div>
+      <div className="login-main">
+        <h1>Личный кабинет</h1><p>Войдите с демонстрационной учётной записью.</p>
+        <form className="stack" onSubmit={submit}>
+          <label>Логин<input autoComplete="username" value={login} onChange={event => setLogin(event.target.value)} required maxLength={64} /></label>
+          <label>Пароль<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required maxLength={128} /></label>
+          {error && <Problem text={error} />}
+          <button className="button primary" disabled={loading}>{loading ? 'Входим…' : 'Войти'} <ArrowRight size={19} aria-hidden="true" /></button>
+          {loading && <div className="visually-hidden"><Busy text="Проверяем данные" /></div>}
+        </form>
+        <div className="demo-logins"><strong>Тестовые логины</strong><div>
+          <button type="button" onClick={() => setLogin('student1')}>Студент 1</button>
+          <button type="button" onClick={() => setLogin('student2')}>Студент 2</button>
+          <button type="button" onClick={() => setLogin('staff')}>Сотрудник</button>
+        </div><p>Пароль выдаёт организатор.</p></div>
+      </div>
+    </main>
+  </div>
 }

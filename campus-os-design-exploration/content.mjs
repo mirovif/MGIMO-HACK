@@ -1,3 +1,5 @@
+export const campusMapUrl = 'https://in.umap.world/reu';
+
 export const navigation = [
   ['university', 'Об университете'],
   ['education', 'Обучение'],

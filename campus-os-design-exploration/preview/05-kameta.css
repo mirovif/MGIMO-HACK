@@ -20,7 +20,7 @@
   color: var(--accent);
 }
 
-.relief .relief-kameta > p {
+.relief .relief-kameta-copy {
   grid-area: copy;
   align-self: start;
   font-size: clamp(1rem, 1.48vw, 1.24rem);

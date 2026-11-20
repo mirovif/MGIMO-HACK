@@ -14,10 +14,10 @@
   place-items: center;
   width: clamp(110px, 13vw, 174px);
   aspect-ratio: 1;
-  border: 1px solid #d6dfff;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--blue-tint);
-  color: var(--blue-dark);
+  background: var(--tonal);
+  color: var(--link);
 }
 
 .avatar svg { width: 56%; height: 56%; }
@@ -50,8 +50,8 @@
   min-height: 94px;
   padding: 13px 16px;
   border-radius: 6px;
-  background: var(--blue-tint);
-  color: var(--blue-dark);
+  background: var(--tonal);
+  color: var(--link);
   overflow-wrap: anywhere;
 }
 

@@ -13,9 +13,9 @@ const contentTypes = {
   webp: 'image/webp',
   mp4: 'video/mp4',
 };
-const allowedPath = /^\/(?:index\.html|home\.html|(?:base|compare|fonts)\.css|(?:compare|content|home)\.mjs|concepts\/0[1-5]\.(?:css|js)|assets\/(?:[a-z-]+\.(?:mp4|webp)|fonts\/[a-z0-9-]+\.woff2))$/;
+const allowedPath = /^\/(?:index\.html|home\.html|(?:base|compare|fonts|utret-theme)\.css|(?:compare|content|home)\.mjs|concepts\/0[1-5]\.(?:css|js)|assets\/(?:[a-z-]+\.(?:mp4|webp)|fonts\/[a-z0-9-]+\.woff2))$/;
 const previewPath = /^\/preview\/(?:index\.html|(?:shared|viewer)\.(?:css|mjs)|0[2-5](?:-[a-z0-9-]+)?\.(?:html|css|mjs|webp))$/;
-const universePath = /^\/education-universe\/(?:(?:booklet|universe)\.(?:mjs|css)|(?:graph|scene(?:-layout)?)\.mjs|data\/education_universe\.graph\.json|models\/mgimo_(?:chrome_sculpture|faculty_constellation|hero_universe|program_artifact)\.glb|vendor\/(?:three\.module|three\.core\.min|GLTFLoader|BufferGeometryUtils)\.js)$/;
+const universePath = /^\/education-universe\/(?:(?:booklet|universe)\.(?:mjs|css)|(?:graph|markup|scene(?:-layout)?)\.mjs|data\/education_universe\.graph\.json|models\/mgimo_(?:chrome_sculpture|faculty_constellation|hero_universe|program_artifact)\.glb|vendor\/(?:three\.module|three\.core\.min|GLTFLoader|BufferGeometryUtils)\.js)$/;
 const port = Number(process.env.PORT || 4180);
 
 function rangeFor(header, size) {

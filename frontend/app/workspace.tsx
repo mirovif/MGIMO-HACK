@@ -1,16 +1,17 @@
 'use client'
 
 import {
-  Bell, CalendarDays, ChevronRight, CircleUserRound, ClipboardList, GraduationCap, House,
-  LogOut, MapPin, Menu, MessageCircle, MoveRight, NotebookPen, PartyPopper, RefreshCw, X,
+  ArrowUpRight, Bell, BookOpen, CalendarDays, ChevronRight, CircleUserRound, ClipboardList, GraduationCap, House,
+  IdCard, LogOut, MapPin, Menu, MessageCircle, MoveRight, NotebookPen, PartyPopper, RefreshCw, X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { AccountProfile } from './account-profile'
 import { api, errorText, formatDate, formatTime, moscowToday, useResource, type CaseSummary, type Notice, type Profile, type Schedule } from './lib'
 import { AssistantPage } from './chat'
+import { EducationCatalog } from './education-catalog'
 import { CaseDetails, CaseList, Wizard } from './requests'
 import { Campus, EventsPage, GradesPage, LessonList, SchedulePage } from './student'
-import { Busy, Empty, Problem, Section, StatusBadge } from './ui'
+import { Busy, Empty, Problem, ProfileFacts, Section, StatusBadge } from './ui'
 
 const nav = [
   { id: 'home', label: 'Обзор', icon: House },
@@ -18,12 +19,16 @@ const nav = [
   { id: 'grades', label: 'Успеваемость', icon: GraduationCap },
   { id: 'new', label: 'Решить ситуацию', icon: NotebookPen },
   { id: 'requests', label: 'Мои обращения', icon: ClipboardList },
-  { id: 'campus', label: 'Кампус', icon: MapPin },
+  { id: 'campus', label: 'Карта РЭУ', icon: MapPin },
+  { id: 'catalog', label: 'Каталог', icon: BookOpen },
+  { id: 'ticket', label: 'Студенческий билет', icon: IdCard },
   { id: 'events', label: 'Мероприятия', icon: PartyPopper },
   { id: 'notifications', label: 'Уведомления', icon: Bell },
-  { id: 'assistant', label: 'ИИ-помощник', icon: MessageCircle },
+  { id: 'assistant', label: 'Комета', icon: MessageCircle },
   { id: 'profile', label: 'Профиль', icon: CircleUserRound },
 ]
+
+const shortcuts = nav.filter(item => ['campus', 'catalog', 'ticket', 'assistant'].includes(item.id))
 
 export function Workspace({ user, route, onLogout }: { user: Profile; route: string; onLogout: () => void }) {
   const staff = user.role === 'staff'
@@ -59,8 +64,8 @@ export function Workspace({ user, route, onLogout }: { user: Profile; route: str
   return <div className="workspace">
     <a className="skip" href="#content" onClick={event => { event.preventDefault(); document.getElementById('content')?.focus() }}>К содержанию</a>
     <header className="app-top">
-      <a className="app-brand" href={staff ? '#app/requests' : '#app/home'}>Campus<span> OS</span></a>
-      <span className="app-role">{staff ? 'Кабинет сотрудника' : 'Цифровой деканат'}</span>
+      <a className="utret-brand" href="/" aria-label="UTRET, на главную">UTRET</a>
+      <span className="app-role">{staff ? 'Кабинет сотрудника' : 'Личный кабинет'}</span>
       <div className="top-actions"><a className="icon-button notify-link" href="#app/notifications" aria-label={unread ? 'Уведомления, непрочитанных: ' + unread : 'Уведомления'}>
         <Bell size={21} />{unread > 0 && <i />}</a>
         <a href="#app/profile" className="profile-link" aria-label="Открыть профиль"><span>{user.name.split(' ').map(part => part[0]).slice(0, 2).join('')}</span><b>{user.name}</b></a>
@@ -85,6 +90,8 @@ export function Workspace({ user, route, onLogout }: { user: Profile; route: str
       {page === 'new' && <Wizard user={user} />}
       {page === 'requests' && (remainder ? <CaseDetails key={remainder} id={remainder} staff={staff} onChange={reload} /> : <CaseList staff={staff} />)}
       {page === 'campus' && <Campus key={remainder} room={safeDecode(remainder)} />}
+      {page === 'catalog' && <EducationCatalog />}
+      {page === 'ticket' && <StudentTicket user={user} />}
       {page === 'events' && <EventsPage />}
       {page === 'notifications' && <Notifications resource={notices} />}
       {page === 'assistant' && <AssistantPage user={user} />}
@@ -109,7 +116,7 @@ function Home({ user }: { user: Profile }) {
         <div className="kicker"><NotebookPen size={19} /> Цифровой деканат</div>
         <h2>Решить<br /><em>ситуацию.</em></h2>
         <p>Запроси справку, сообщи о пропуске или задай вопрос деканату.</p>
-        <a href="#app/new" className="button on-blue">Выбрать ситуацию <MoveRight size={21} /></a>
+        <a href="#app/new" className="button primary">Выбрать ситуацию <MoveRight size={21} /></a>
       </div>
       <div className="panel home-today">
         <header className="panel-head"><h2>Твой день</h2><a href="#app/schedule" className="text-link">Расписание <ChevronRight size={16} /></a></header>
@@ -119,12 +126,31 @@ function Home({ user }: { user: Profile }) {
         {timetable.data && <LessonList lessons={timetable.data.lessons} />}
       </div>
     </div>
+    <nav className="home-shortcuts" aria-label="Быстрые ссылки">
+      {shortcuts.map(({ id, label, icon: Icon }) => <a key={id} href={'#app/' + id}>
+        <Icon size={20} aria-hidden="true" /><strong>{label}</strong><ArrowUpRight size={17} aria-hidden="true" />
+      </a>)}
+    </nav>
     <div className="panel home-requests"><header className="panel-head"><h2>Мои обращения</h2><a href="#app/requests" className="text-link">Все обращения <ChevronRight size={16} /></a></header>
       {cases.loading && <Busy />}
       {cases.error && <Problem text={cases.error} retry={cases.reload} />}
       {cases.data?.length === 0 && <Empty title="Пока нет обращений">Отправленные заявки появятся здесь.</Empty>}
       {cases.data?.slice(0, 3).map(item => <a key={item.id} href={'#app/requests/' + item.id} className="inline-case"><strong>{item.number}</strong><StatusBadge status={item.status} /></a>)}
     </div>
+  </Section>
+}
+
+function StudentTicket({ user }: { user: Profile }) {
+  return <Section title="Студенческий билет" text="Демонстрационные данные студента.">
+    <article className="panel student-ticket">
+      <header className="panel-head"><span className="utret-brand">UTRET</span><span className="muted small">РЭУ имени Г. В. Плеханова</span></header>
+      <h2>{user.name}</h2>
+      <ProfileFacts profile={user} />
+      <div className="button-group">
+        <a className="button primary" href="#app/grades">Открыть зачётку <ArrowUpRight size={17} /></a>
+        <a className="button secondary" href="#app/profile">Профиль</a>
+      </div>
+    </article>
   </Section>
 }
 
