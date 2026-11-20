@@ -53,6 +53,7 @@ export function errorText(error: unknown) {
 
 export type Profile = {
   id: number; login: string; name: string; role: 'student' | 'staff'
+  display_name?: string | null
   faculty: string | null; program: string | null; year: number | null; group: string | null
 }
 export type Lesson = {

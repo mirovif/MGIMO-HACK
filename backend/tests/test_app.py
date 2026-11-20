@@ -99,6 +99,35 @@ def test_profile_details_backfill_preserves_existing_users_and_details(tmp_path,
         }
 
 
+def test_display_name_updates_only_current_profile_and_persists(tmp_path):
+    url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
+    app = create_app(url)
+    endpoint = '/api/profile/display-name'
+    with TestClient(app) as student, TestClient(app) as other:
+        assert student.put(endpoint, json={'display_name': 'Мария'}).status_code == 401
+        original = login(student, 'student1')
+        other_profile = login(other, 'student2')
+        assert original['display_name'] is None
+        for invalid in (
+            {'display_name': '   '}, {'display_name': 'А' * 41}, {'display_name': 'А\u202eнна'},
+            {'display_name': 'Мария', 'user_id': other_profile['id']},
+        ):
+            assert student.put(endpoint, json=invalid).status_code == 422
+
+        assert student.put(endpoint, json={'display_name': 'Мария'}).status_code == 200
+        result = student.put(endpoint, json={'display_name': '  Анна   Мария  '})
+        assert result.status_code == 200
+        assert result.json() == {**original, 'display_name': 'Анна Мария'}
+        assert student.get('/api/profile').json() == result.json()
+        assert student.get('/api/profile/details').json()['full_name'] == 'Орлова Анна Сергеевна'
+        assert other.get('/api/profile').json() == other_profile
+
+    with TestClient(create_app(url)) as restarted:
+        assert login(restarted, 'student1')['display_name'] == 'Анна Мария'
+        assert restarted.put(endpoint, json={'display_name': None}).json() == original
+        assert restarted.get('/api/profile').json() == original
+
+
 def test_request_round_trip_and_restart(tmp_path):
     url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
     app = create_app(url)

@@ -88,8 +88,8 @@ select { appearance: none; padding-right: 32px; background-repeat: no-repeat; ba
 .top-actions { display: flex; margin-left: auto; align-items: center; gap: 12px; }
 .notify-link i { position: absolute; top: 7px; right: 8px; background: var(--accent); width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface); }
 .profile-link { display: flex; gap: 8px; align-items: center; min-height: 44px; }
-.profile-link span { display: grid; place-items: center; width: 40px; height: 40px; background: var(--tonal); color: var(--link); border-radius: 50%; font-size: .89rem; font-weight: 800; }
-.profile-link b { font-size: .91rem; }
+.profile-link span { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 auto; background: var(--tonal); color: var(--link); border-radius: 50%; font-size: .89rem; font-weight: 800; }
+.profile-link b { max-width: min(28vw, 260px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .91rem; }
 .menu-button { display: none; }
 .sidebar { background: #19222d; border-right: 1px solid var(--line); padding: 20px 13px; display: flex; flex-direction: column; gap: 16px; }
 .sidebar nav { display: grid; gap: 4px; }

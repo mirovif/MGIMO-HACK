@@ -83,6 +83,31 @@ test('UTRET opens a matching cabinet with the REU map, catalog and Comet at 360 
   }
 })
 
+test('a profile name edit updates the greeting and survives reload at 360 px', async ({ browser }) => {
+  const context = await browser.newContext(mobile)
+  const page = await context.newPage()
+  try {
+    await login(page, 'student2', 'profile')
+    await page.getByRole('button', { name: 'Изменить имя' }).click()
+    await page.getByLabel('Имя в кабинете').fill('Миша Александр')
+    await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
+    await expect(page.getByText('Имя в кабинете — Миша Александр')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Светлов Михаил Андреевич' })).toBeVisible()
+    await withoutOverflow(page)
+    await navigate(page, 'Обзор')
+    const greeting = page.getByRole('heading', { name: 'Привет, Миша Александр', exact: true })
+    await expect(greeting).toBeVisible()
+    await page.reload()
+    await expect(greeting).toBeVisible()
+    await navigate(page, 'Профиль')
+    await page.getByRole('button', { name: 'Изменить имя' }).click()
+    await page.getByRole('button', { name: 'Вернуть исходное имя' }).click()
+    await expect(page.getByText('Имя в кабинете — Михаил')).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
+
 test('Campus OS overview shows the schedule demo and cabinet capabilities at 360 px', async ({ browser }) => {
   const context = await browser.newContext(mobile)
   const page = await context.newPage()

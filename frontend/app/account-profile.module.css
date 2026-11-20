@@ -21,13 +21,22 @@
 }
 
 .avatar svg { width: 56%; height: 56%; }
-.identity .name {
+.identityHeading {
   grid-area: name;
   align-self: center;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.identity .name {
   font-size: clamp(1.6rem, 3vw, 2.8rem);
   line-height: 1.1;
   overflow-wrap: break-word;
 }
+
+.displayName { overflow-wrap: anywhere; }
+.nameForm { max-width: 26rem; }
 
 .contacts { grid-area: contacts; display: grid; gap: 8px; min-width: 0; }
 .contacts :global(.facts) { max-width: 48rem; }

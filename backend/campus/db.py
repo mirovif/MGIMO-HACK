@@ -24,6 +24,11 @@ profile_details = Table(
     Column('specialization', String(160)), Column('education_level', String(120)),
     Column('study_mode', String(64)), Column('study_basis', String(64)),
 )
+profile_names = Table(
+    'profile_names', meta,
+    Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
+    Column('display_name', String(40), nullable=False),
+)
 sessions = Table(
     'sessions', meta, Column('token', String(64), primary_key=True),
     Column('user_id', ForeignKey('users.id'), nullable=False), Column('expires_at', Integer, nullable=False, index=True),

@@ -40,7 +40,13 @@ export default function LksPage() {
     return () => window.removeEventListener('campus-session-expired', expired)
   }, [])
 
-  if (user) return <Workspace key={user.id} user={user} route={route} onLogout={() => window.location.replace('/')} />
+  if (user) return <Workspace
+    key={user.id}
+    user={user}
+    route={route}
+    onProfileChange={profile => setUser(current => current?.id === profile.id ? profile : current)}
+    onLogout={() => window.location.replace('/')}
+  />
 
   if (user === undefined) return (
     <main className="lks-session">

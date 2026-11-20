@@ -30,8 +30,11 @@ const nav = [
 
 const shortcuts = nav.filter(item => ['campus', 'catalog', 'ticket', 'assistant'].includes(item.id))
 
-export function Workspace({ user, route, onLogout }: { user: Profile; route: string; onLogout: () => void }) {
+export function Workspace({ user, route, onProfileChange, onLogout }: {
+  user: Profile; route: string; onProfileChange: (profile: Profile) => void; onLogout: () => void
+}) {
   const staff = user.role === 'staff'
+  const headerName = user.display_name ?? user.name
   const allowed = staff ? nav.filter(item => ['requests', 'notifications', 'profile'].includes(item.id)) : nav
   const [, section, remainder] = route.split('/')
   const page = allowed.some(item => item.id === section) ? section : staff ? 'requests' : 'home'
@@ -68,7 +71,7 @@ export function Workspace({ user, route, onLogout }: { user: Profile; route: str
       <span className="app-role">{staff ? 'Кабинет сотрудника' : 'Личный кабинет'}</span>
       <div className="top-actions"><a className="icon-button notify-link" href="#app/notifications" aria-label={unread ? 'Уведомления, непрочитанных: ' + unread : 'Уведомления'}>
         <Bell size={21} />{unread > 0 && <i />}</a>
-        <a href="#app/profile" className="profile-link" aria-label="Открыть профиль"><span>{user.name.split(' ').map(part => part[0]).slice(0, 2).join('')}</span><b>{user.name}</b></a>
+        <a href="#app/profile" className="profile-link" aria-label="Открыть профиль"><span>{headerName.split(' ').slice(0, 2).map(part => Array.from(part)[0]).join('')}</span><b>{headerName}</b></a>
         <button className="icon-button menu-button" aria-expanded={open} aria-controls="account-nav" aria-label={open ? 'Закрыть меню' : 'Открыть меню'} onClick={() => setOpen(!open)}>{open ? <X size={22} /> : <Menu size={22} />}</button>
       </div>
     </header>
@@ -97,6 +100,7 @@ export function Workspace({ user, route, onLogout }: { user: Profile; route: str
       {page === 'assistant' && <AssistantPage user={user} />}
       {page === 'profile' && <AccountProfile
         user={user}
+        onProfileChange={onProfileChange}
         action={<button className="button secondary" disabled={leaving} onClick={logout}><LogOut size={18} /> Выйти</button>}
       />}
     </main>
@@ -110,7 +114,7 @@ function safeDecode(value?: string) {
 function Home({ user }: { user: Profile }) {
   const timetable = useResource<Schedule>('/schedule')
   const cases = useResource<CaseSummary[]>('/requests')
-  return <Section title={'Привет, ' + user.name.split(' ')[0]} text={formatDate(moscowToday(), true)}>
+  return <Section title={'Привет, ' + (user.display_name ?? user.name.split(' ')[0])} text={formatDate(moscowToday(), true)}>
     <div className="home-grid">
       <div className="home-hero">
         <div className="kicker"><NotebookPen size={19} /> Цифровой деканат</div>
