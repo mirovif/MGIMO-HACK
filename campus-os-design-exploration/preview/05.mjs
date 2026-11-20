@@ -1,5 +1,6 @@
 import { navigation, header, videoMarkup, startPage } from './shared.mjs';
 import { bookletMarkup, mountBooklet } from '../education-universe/booklet.mjs';
+import { mountEducationUniverse } from '../education-universe/universe.mjs';
 import { storyMarkup, mountStory } from './05-story.mjs';
 import { kametaMarkup, mountKameta } from './05-kameta.mjs';
 import { teamMarkup, mountTeam } from './05-team.mjs';
@@ -11,14 +12,16 @@ const utretNavigation = navigation
 
 document.body.innerHTML = `
   <header class="relief-hero" id="top">
-    ${header(siteName, utretNavigation)}
+    ${header(siteName, utretNavigation, '/lks')}
     <div class="relief-stage">
-      <div class="relief-film">${videoMarkup()}</div>
+      <div class="relief-film">
+        ${videoMarkup({ src: '../assets/campus-still-fast.webp', width: 960, height: 540 })}
+      </div>
       <h1 class="relief-title">
         <span><span>Учёба</span></span>
         <span><span>выходит</span></span><br class="relief-mobile-break">
         <span><span>за рамки</span></span>
-        <span><span>аудитории.</span></span>
+        <span><span>аудитории</span></span>
       </h1>
       ${bookletMarkup()}
     </div>
@@ -39,7 +42,11 @@ document.body.innerHTML = `
           <button type="button" data-zoom-step="1" aria-label="Приблизить карту"><span aria-hidden="true">+</span></button>
         </div>
       </div>
-      <p class="eu-status" role="status" data-universe-status>Загружаем каталог…</p>
+      <div class="eu-actions">
+        <p class="eu-status" role="status" data-universe-status>Загружаем каталог…</p>
+        <button type="button" data-universe-retry hidden>Повторить загрузку</button>
+        <button type="button" data-universe-map hidden>Открыть 3D-карту</button>
+      </div>
       <nav class="eu-navigation" aria-label="Уровни образовательной вселенной">
         <button type="button" data-universe-back hidden><span aria-hidden="true">←</span> Назад</button>
         <ol class="eu-breadcrumbs" data-universe-breadcrumbs hidden></ol>
@@ -75,17 +82,5 @@ mountBooklet(document.querySelector('#student-id'));
 mountStory(document.querySelector('#campus'));
 mountKameta(document.querySelector('#kameta'));
 mountTeam(document.querySelector('#team'));
-startPage();
-
-const universe = document.querySelector('[data-education-universe]');
-const loadUniverse = new IntersectionObserver(([entry]) => {
-  if (!entry.isIntersecting) return;
-  loadUniverse.disconnect();
-  import('../education-universe/universe.mjs').then(({ mountEducationUniverse }) => {
-    mountEducationUniverse(universe);
-  }).catch((error) => {
-    universe.querySelector('[data-universe-status]').textContent = 'Не удалось загрузить каталог. Обновите страницу.';
-    console.error('Education Universe:', error);
-  });
-}, { rootMargin: '550px 0px' });
-loadUniverse.observe(universe);
+mountEducationUniverse(document.querySelector('[data-education-universe]'));
+startPage({ videoSource: '../assets/campus-fast.mp4' });

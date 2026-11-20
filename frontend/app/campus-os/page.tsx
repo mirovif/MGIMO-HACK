@@ -1,14 +1,14 @@
 import { ArrowDown, ArrowRight, CalendarDays, GraduationCap, MessageCircle, NotebookPen, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { LegacyCabinetLink } from './legacy-cabinet-link'
-import { SchedulePreview } from './schedule-preview'
-import styles from './welcome.module.css'
+import { LegacyCabinetLink } from '../legacy-cabinet-link'
+import { SchedulePreview } from '../schedule-preview'
+import styles from '../welcome.module.css'
 
 const features = [
   { title: 'Расписание', icon: CalendarDays, description: 'Посмотрите пары на день или неделю, проверьте аудиторию и узнайте о переносах.' },
   { title: 'Успеваемость', icon: GraduationCap, description: 'Посмотрите оценки и зачёты по дисциплинам и узнайте даты предстоящих экзаменов.' },
   { title: 'Обращения', icon: NotebookPen, description: 'Закажите справку, сообщите о пропуске или задайте вопрос деканату. Ход рассмотрения и ответы сохраняются в истории.' },
-  { title: 'ИИ-помощник', icon: MessageCircle, description: 'Спросите, как запросить пересдачу, найти аудиторию или проверить статус обращения. Ответы в прототипе демонстрационные.' },
+  { title: 'ИИ-помощник', icon: MessageCircle, description: 'Спросите, где найти график пересдач, как заказать справку или обратиться в деканат. В ответе появятся ссылки на материалы РЭУ.' },
 ]
 
 export default function WelcomePage() {

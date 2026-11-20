@@ -6,29 +6,39 @@
   <meta name="theme-color" content="#303B48">
   <title>UTRET</title>
   <script>
-    function keepCoverAsEntry() {
-      if (location.hash === '#campus') {
-        history.replaceState(history.state, '', '#top');
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    function openCover() {
+      if (location.pathname === '/' && (location.hash === '#login' || location.hash.startsWith('#app/'))) {
+        const route = location.hash === '#login' ? '' : location.hash;
+        location.replace('/lks' + location.search + route);
+        return;
       }
-
-      if (!location.hash || location.hash === '#top') {
-        history.scrollRestoration = 'manual';
+      if (location.hash) {
+        history.replaceState(history.state, '', location.pathname + location.search);
       }
+      window.scrollTo({ top: 0, behavior: 'instant' });
     }
 
-    keepCoverAsEntry();
-    window.addEventListener('hashchange', keepCoverAsEntry);
+    history.scrollRestoration = 'manual';
+    openCover();
+    window.addEventListener('pageshow', ({ persisted }) => {
+      if (persisted) openCover();
+    });
+    window.addEventListener('hashchange', () => {
+      if (['#campus', '#relief-story-title', '#team'].includes(location.hash)) openCover();
+    });
   </script>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="../fonts.css">
-  <link rel="stylesheet" href="./shared.css">
-  <link rel="stylesheet" href="./05.css">
-  <link rel="stylesheet" href="./05-kameta.css">
-  <link rel="stylesheet" href="./05-team.css">
-  <link rel="stylesheet" href="../education-universe/booklet.css">
-  <link rel="stylesheet" href="../education-universe/universe.css">
-  <script type="module" src="./05.mjs"></script>
+  <link rel="preload" as="image" href="/assets/campus-still-fast.webp" fetchpriority="high">
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="/preview/shared.css">
+  <link rel="stylesheet" href="/preview/05.css">
+  <link rel="stylesheet" href="/preview/05-kameta.css">
+  <link rel="stylesheet" href="/preview/05-team.css">
+  <link rel="stylesheet" href="/education-universe/booklet.css">
+  <link rel="stylesheet" href="/education-universe/universe.css">
+  <link rel="modulepreload" href="/education-universe/universe.mjs">
+  <link rel="modulepreload" href="/education-universe/graph.mjs">
+  <script type="module" src="/preview/05.mjs"></script>
 </head>
 <body class="relief">
 </body>

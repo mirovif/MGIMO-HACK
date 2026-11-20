@@ -32,11 +32,11 @@ function sourceLink(graph, node, viaProgramId) {
 }
 
 function panelContent(graph, path, contextual) {
-  const node = path.at(-1);
+  const node = path[path.length - 1];
   const program = path.find((item) => item.type === 'program');
   const overview = node.type === 'degree';
   const related = node.type === 'subject' ? graph.sharedPrograms(node.id) : graph.children(node.id);
-  const parent = path.at(-2);
+  const parent = path[path.length - 2];
   const programNote = node.type === 'program'
     ? `<p class="eu-note">${node.isCompleteCurriculum === true ? 'Дисциплины из опубликованного учебного плана.' : 'В источнике может быть представлен неполный список дисциплин.'}</p>`
     : '';
@@ -66,12 +66,17 @@ export function mountEducationUniverse(section) {
   const breadcrumbs = section.querySelector('[data-universe-breadcrumbs]');
   const back = section.querySelector('[data-universe-back]');
   const status = section.querySelector('[data-universe-status]');
+  const retry = section.querySelector('[data-universe-retry]');
+  const mapButton = section.querySelector('[data-universe-map]');
   const tooltip = section.querySelector('[data-universe-tooltip]');
   const zoomControls = section.querySelector('[data-universe-zoom]');
+  const supportsMap = typeof WebGL2RenderingContext !== 'undefined' && typeof ResizeObserver !== 'undefined';
+  const selectedNode = () => path[path.length - 1];
   let graph;
   let path;
   let scene;
-  let started = false;
+  let graphRequest;
+  let mapRequest;
   let disposed = false;
   let shown = false;
   let hoverId = null;
@@ -82,7 +87,7 @@ export function mountEducationUniverse(section) {
   }
 
   function render() {
-    const selected = path.at(-1);
+    const selected = selectedNode();
     section.dataset.universeLevel = selected.type;
     back.hidden = path.length === 1;
     breadcrumbs.hidden = path.length === 1;
@@ -94,7 +99,7 @@ export function mountEducationUniverse(section) {
   }
 
   function navigate(id, focusPanel = true) {
-    if (!graph?.byId.has(id) || id === path.at(-1).id) return;
+    if (!graph?.byId.has(id) || id === selectedNode().id) return;
     const selectedProgram = path.find((node) => node.type === 'program');
     path = graph.path(id, selectedProgram?.id);
     hideTooltip();
@@ -108,51 +113,93 @@ export function mountEducationUniverse(section) {
   }
 
   function navigateBack() {
-    if (path?.length > 1) navigate(path.at(-2).id);
+    if (path?.length > 1) navigate(path[path.length - 2].id);
   }
 
-  function showList(error) {
-    if (disposed) return;
-    if (error && error.name !== 'AbortError') console.info('Education Universe: 3D недоступно', error);
-    section.dataset.universeMode = 'list';
+  function setStatus(message = '') {
+    status.textContent = message;
+    status.hidden = !message;
+  }
+
+  function setMode(mode) {
+    const isMap = mode === 'webgl';
+    section.dataset.universeMode = mode;
+    mapButton.textContent = isMap ? 'Открыть список' : 'Открыть 3D-карту';
+    zoomControls.hidden = !isMap;
+    setStatus();
     render();
-    canvas.hidden = true;
-    zoomControls.hidden = true;
     hideTooltip();
-    status.textContent = 'Трёхмерная сцена недоступна. Выберите раздел в списке.';
-    status.hidden = false;
+    if (isMap) scene.focus(selectedNode().id, path.find((node) => node.type === 'program')?.id);
+    updateSceneActivity();
   }
 
   function updateSceneActivity() {
     const viewerHidden = document.documentElement.hasAttribute('data-preview-inactive');
     if (viewerHidden && hoverId) hideTooltip();
-    scene?.setActive(shown && !document.hidden && !viewerHidden);
+    scene?.setActive(section.dataset.universeMode === 'webgl' && shown && !document.hidden && !viewerHidden);
   }
 
-  async function start() {
-    if (started || disposed) return;
-    started = true;
+  async function loadCatalog() {
+    if (graphRequest || graph || disposed) return;
+    const request = new AbortController();
+    graphRequest = request;
+    const timeout = setTimeout(() => request.abort(), 12000);
+    const restoreFocus = document.activeElement === retry;
+    retry.hidden = true;
+    setStatus('Загружаем каталог…');
     try {
-      graph = await loadGraph();
+      graph = await loadGraph(undefined, { signal: request.signal });
+      if (disposed) return;
+      path = [graph.root];
+      setMode('list');
+      mapButton.hidden = !supportsMap;
+      if (restoreFocus) panel.querySelector('h3').focus({ preventScroll: true });
+      const connection = navigator.connection;
+      if (supportsMap && !restoreFocus && !connection?.saveData &&
+          !/2g|3g/.test(connection?.effectiveType ?? '') && matchMedia('(min-width: 841px)').matches) {
+        void loadMap(false);
+      }
     } catch (error) {
       if (disposed) return;
+      graph = undefined;
       section.dataset.universeMode = 'error';
-      status.textContent = 'Не удалось загрузить каталог. Обновите страницу.';
-      console.error('Education Universe:', error);
-      return;
+      setStatus('Не удалось загрузить каталог.');
+      retry.hidden = false;
+      if (restoreFocus) retry.focus({ preventScroll: true });
+      if (!request.signal.aborted) console.error('Education Universe:', error);
+    } finally {
+      clearTimeout(timeout);
+      graphRequest = undefined;
     }
-    if (disposed) return;
-    path = [graph.root];
-    render();
+  }
 
+  function finishMapRequest(request) {
+    if (mapRequest !== request) return;
+    mapRequest = undefined;
+    mapButton.removeAttribute('aria-disabled');
+    mapButton.textContent = 'Открыть 3D-карту';
+  }
+
+  async function loadMap(openWhenReady) {
+    if (disposed || mapRequest) return;
+    const request = new AbortController();
+    mapRequest = request;
+    mapButton.setAttribute('aria-disabled', 'true');
+    mapButton.textContent = 'Загружаем 3D-карту…';
+    setStatus();
+    const timeout = setTimeout(() => {
+      request.abort();
+      finishMapRequest(request);
+      setStatus('3D-карта не загрузилась.');
+    }, 20000);
     try {
       const { createUniverseScene } = await import('./scene.mjs');
-      if (disposed) return;
-      scene = await createUniverseScene(canvas, graph, {
+      if (request.signal.aborted) return;
+      const loadedScene = await createUniverseScene(canvas, graph, {
         select(id) {
           navigate(id, false);
           requestAnimationFrame(() => {
-            if (!disposed && path.at(-1).id === id) panel.querySelector('h3').focus({ preventScroll: true });
+            if (!disposed && selectedNode().id === id) panel.querySelector('h3').focus({ preventScroll: true });
           });
         },
         hover(id) {
@@ -165,24 +212,36 @@ export function mountEducationUniverse(section) {
           tooltip.textContent = node.label;
           tooltip.hidden = false;
         },
-        unavailable: showList,
-      });
-      if (disposed) {
-        scene?.dispose();
+        unavailable() {
+          scene?.dispose();
+          scene = undefined;
+          setMode('list');
+          mapButton.hidden = true;
+          setStatus('3D-карта недоступна в этом браузере.');
+        },
+      }, request.signal);
+      if (request.signal.aborted) {
+        loadedScene?.dispose();
         return;
       }
+      scene = loadedScene;
       if (!scene) {
-        showList();
+        mapButton.hidden = true;
+        if (openWhenReady) setStatus('3D-карта недоступна в этом браузере.');
         return;
       }
-      section.dataset.universeMode = 'webgl';
-      render();
-      zoomControls.hidden = false;
-      status.hidden = true;
-      scene.focus(path.at(-1).id, path.find((node) => node.type === 'program')?.id);
-      updateSceneActivity();
+      finishMapRequest(request);
+      if (openWhenReady || (path.length === 1 && !section.contains(document.activeElement))) {
+        setMode('webgl');
+      }
     } catch (error) {
-      showList(error);
+      if (request.signal.aborted) return;
+      setStatus('3D-карта не загрузилась.');
+      console.info('Education Universe: 3D недоступно', error);
+    } finally {
+      clearTimeout(timeout);
+      request.abort();
+      finishMapRequest(request);
     }
   }
 
@@ -190,6 +249,11 @@ export function mountEducationUniverse(section) {
   const listener = { signal: events.signal };
   section.addEventListener('click', (event) => {
     const button = event.target.closest('button');
+    if (button === retry) void loadCatalog();
+    if (button === mapButton && !mapRequest) {
+      if (scene) setMode(section.dataset.universeMode === 'webgl' ? 'list' : 'webgl');
+      else void loadMap(true);
+    }
     if (button?.matches('[data-universe-back]')) navigateBack();
     if (button?.dataset.universeNode) navigate(button.dataset.universeNode);
     if (button?.dataset.zoomStep) scene?.zoomBy(Number(button.dataset.zoomStep));
@@ -228,20 +292,28 @@ export function mountEducationUniverse(section) {
   document.addEventListener('visibilitychange', updateSceneActivity, listener);
   document.addEventListener('campus-preview-visibility', updateSceneActivity, listener);
 
-  const observer = new IntersectionObserver(([entry]) => {
+  const activityObserver = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
     shown = entry.isIntersecting;
     section.toggleAttribute('data-universe-active', shown);
     if (!shown && hoverId) hideTooltip();
     updateSceneActivity();
   }, { rootMargin: '120px 0px' });
-  observer.observe(section);
-
-  void start();
+  const loadObserver = activityObserver && new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    loadObserver.disconnect();
+    void loadCatalog();
+  }, { rootMargin: '550px 0px' });
+  activityObserver?.observe(section);
+  if (loadObserver) loadObserver.observe(section);
+  else void loadCatalog();
 
   function dispose() {
     disposed = true;
     events.abort();
-    observer.disconnect();
+    activityObserver?.disconnect();
+    loadObserver?.disconnect();
+    graphRequest?.abort();
+    mapRequest?.abort();
     scene?.dispose();
   }
 

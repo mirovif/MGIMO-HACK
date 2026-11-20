@@ -124,13 +124,17 @@ def insert_once(conn, table, values, keys, *, returning=None):
 
 def initialize(engine, seed=False):
     from .demo import seed_demo
+    from .rag import seed_university_documents
 
     with engine.begin() as conn:
         if conn.dialect.name == 'postgresql':
             conn.execute(text('SELECT pg_advisory_xact_lock(73195821)'))
+        if conn.dialect.name == 'sqlite':
+            conn.exec_driver_sql('BEGIN IMMEDIATE')
         meta.create_all(conn)
         if conn.dialect.name == 'sqlite':
             conn.exec_driver_sql('CREATE VIRTUAL TABLE IF NOT EXISTS document_fts USING fts5(body)')
+        seed_university_documents(conn)
         if seed:
             seed_demo(conn)
 

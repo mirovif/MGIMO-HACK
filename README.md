@@ -2,7 +2,7 @@
 
 Неофициальный конкурсный прототип цифрового деканата РЭУ имени Г. В. Плеханова. Next.js, React и TypeScript работают с монолитным REST API на FastAPI. Локально используется SQLite. Для Vercel настроен PostgreSQL через SQLAlchemy и psycopg.
 
-Репозиторий **MGIMO-HACK**, ветка **`backend`**, служит источником для развёртывания frontend и backend на Vercel. ИИ-помощник по умолчанию работает в режиме `AI_MODE=mock` без API-ключа. Ключ OpenRouter понадобится только при переходе на `AI_MODE=openrouter`.
+Ветка **`master`** объединяет сайт UTRET, личный кабинет Campus OS и его API. Next.js собирает обложку UTRET и её ресурсы из `campus-os-design-exploration/`. Сайт открывается по `/`, кабинет по `/lks`, обзор кабинета по `/campus-os`.
 
 ## Запуск в Windows
 
@@ -26,7 +26,7 @@ Set-Location backend
 npm run dev --prefix frontend
 ```
 
-На [главной странице](http://localhost:3000) нажмите **LKS**, чтобы перейти в [личный кабинет](http://localhost:3000/lks). Описание API доступно на [localhost:3000/api/docs](http://localhost:3000/api/docs). В Linux и macOS путь к интерпретатору виртуального окружения — `.venv/bin/python`.
+На главной странице UTRET нажмите **«Личный кабинет»**, чтобы войти. В Linux и macOS путь к интерпретатору виртуального окружения — `.venv/bin/python`. [UTRET](http://localhost:3000) · [Личный кабинет](http://localhost:3000/lks) · [Описание API](http://localhost:3000/api/docs)
 
 | Роль | Логин | Данные |
 | --- | --- | --- |
@@ -54,7 +54,7 @@ npm run dev --prefix frontend
 
 ## ИИ-помощник и документы
 
-`AI_MODE=mock` работает без API-ключа. Чат помечает демонстрационные ответы. При запуске индекс пуст. Если нужны источники, из каталога `backend` импортируйте проверенный локальный текст UTF-8 с названием и прямой ссылкой на его официальный оригинал.
+При запуске в индекс добавляются краткие сведения из официальных источников РЭУ. В режиме `AI_MODE=mock` помощник отвечает найденной выдержкой со ссылкой на источник. Если поиск не находит подходящих материалов, чат показывает демонстрационную подсказку. Чтобы добавить свой источник, из каталога `backend` импортируйте проверенный локальный текст UTF-8 с названием и прямой ссылкой на оригинал.
 
 ```powershell
 ..\.venv\Scripts\python.exe -m campus.rag PATH_TO_TEXT --title "ACTUAL_DOCUMENT_TITLE" --url "DIRECT_OFFICIAL_HTTPS_URL"
@@ -64,7 +64,7 @@ npm run dev --prefix frontend
 
 ## Vercel
 
-1. Импортируйте **MGIMO-HACK** из GitHub как один проект, оставьте корневой каталог репозитория и выберите `backend` в настройках Production → Branch Tracking. Конфигурация Vercel Services находится в `vercel.json`. Она направляет `/api/*` в FastAPI, остальные запросы — в Next.js. Оба сервиса доступны на одном домене. [Развёртывание из Git](https://vercel.com/docs/git) · [Vercel Services](https://vercel.com/docs/services)
+1. Импортируйте **MGIMO-HACK** из GitHub как один проект, оставьте корневой каталог репозитория и выберите `master` в настройках Production → Branch Tracking. Конфигурация Vercel Services находится в `vercel.json`. Она направляет `/api/*` в FastAPI, остальные запросы — в Next.js. Оба сервиса доступны на одном домене. [Развёртывание из Git](https://vercel.com/docs/git) · [Vercel Services](https://vercel.com/kb/guide/vercel-services)
 2. Подключите PostgreSQL, например Neon из [Vercel Marketplace](https://vercel.com/docs/postgres). Задайте `DATABASE_URL` со строкой подключения к пулу и `sslmode=require`. SQLite на Vercel не используется. Процесс не удерживает собственный пул подключений между вызовами. Turso и его SQLAlchemy-диалект изучены как вариант, для этой конфигурации выбран PostgreSQL. [FastAPI на Vercel](https://vercel.com/docs/frameworks/backend/fastapi) · [Turso SQLAlchemy](https://github.com/tursodatabase/sqlalchemy-libsql)
 3. Для конкурсной БД задайте `DEMO_SEED=true`, `DEMO_PASSWORD` минимум из 12 символов и `AI_MODE=mock`. В текущей версии все вымышленные демо-аккаунты используют этот общий пароль. Переменные `OPENROUTER_API_KEY` и `OPENROUTER_MODEL` в режиме mock можно оставить пустыми. При необходимости задайте `PUBLIC_ORIGIN` с точным HTTPS-адресом основного домена.
 4. После развёртывания проверьте `/api/health`, вход с выданным паролем и просмотр одной заявки после следующего развёртывания. Для публикации потребуются доступ к проекту Vercel и строка подключения PostgreSQL.

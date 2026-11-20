@@ -47,11 +47,11 @@ export function AssistantPage({ user }: { user: Profile }) {
     <div className="panel chat">
       <div className="chat-log" role="log" aria-label="История чата" ref={log}>
         {!turns.length && <div className="chat-intro"><span className="scenario-icon"><Sparkles size={25} /></span>
-          <h2>Чем помочь?</h2><p>Могу объяснить, как пользоваться Campus OS. Ответы в демонстрационном режиме помечены.</p>
+          <h2>Чем помочь?</h2><p>Отвечаю на вопросы об учёбе и сервисах РЭУ. Ссылки на материалы вуза прикрепляю к ответам.</p>
           <div className="button-group">{prompts.map(prompt => <button type="button" key={prompt} className="button secondary" onClick={() => void send(prompt)}>{prompt}</button>)}</div>
         </div>}
         {turns.map((turn, index) => <article className={'chat-turn ' + turn.role} key={index}>
-          <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Campus OS'}</strong>{turn.demo && <span className="badge">Демонстрационный ответ</span>}</div>
+          <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Campus OS'}</strong>{turn.demo && !turn.sources?.length && <span className="badge">Демонстрационный ответ</span>}</div>
           <p className="pre-line">{turn.content}</p>
           {!!turn.sources?.length && <div className="chat-sources"><strong>Источники</strong>{turn.sources.map(source => <div key={source.url}>
             <External href={source.url}>{source.title}</External><p className="muted small">{source.excerpt}</p></div>)}</div>}

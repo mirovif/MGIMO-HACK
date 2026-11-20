@@ -84,6 +84,8 @@ body.relief {
 .relief .desktop-nav a:hover { color: var(--accent); }
 
 .relief .account-link {
+  display: inline-flex;
+  align-items: center;
   padding-inline: .1em;
   border: 0;
   font-size: clamp(.9rem, 1.26vw, 1.125rem);
@@ -290,7 +292,7 @@ body.relief {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas: "title title" "map copy";
-  column-gap: clamp(2rem, 5vw, 6rem);
+  gap: clamp(3rem, 4.2vw, 4.25rem) clamp(2rem, 5vw, 6rem);
   align-items: center;
   padding-block: clamp(6rem, 10vw, 10rem) clamp(6rem, 12vw, 12rem);
 }
@@ -321,7 +323,6 @@ body.relief {
   position: relative;
   inline-size: min(77%, 20rem);
   aspect-ratio: 290 / var(--route-visible-height);
-  margin-block-start: clamp(-.65rem, -1vw, -.3rem);
   justify-self: center;
   overflow: hidden;
   border-radius: 7% 25% 7% 7% / 6% 24% 6% 6%;
@@ -403,19 +404,20 @@ body.relief {
 }
 
 .relief .relief-story :is(h2, h3) {
-  font: italic 600 var(--relief-section-title-size)/1.02 var(--serif-font);
-  letter-spacing: -.04em;
+  font: 500 clamp(2.75rem, 5.7vw, 6rem)/1.06 'Playfair Display', Georgia, serif;
+  letter-spacing: -.03em;
 }
 
 .relief-story-title > span { display: block; }
 .relief-story-title > span + span {
   margin-block-start: .1em;
   color: var(--accent);
+  font-style: italic;
 }
 
 .relief .relief-story h3 {
   max-inline-size: 29ch;
-  font-size: clamp(2.15rem, 4.1vw, 4.5rem);
+  font-size: clamp(2.2rem, 4.25vw, 4.65rem);
   text-wrap: balance;
 }
 
@@ -424,7 +426,10 @@ body.relief {
   font-size: clamp(1.0625rem, 1.45vw, 1.3rem);
 }
 
-.relief .relief-story-finale h3 { max-inline-size: 33ch; }
+.relief .relief-story-finale h3 {
+  max-inline-size: 33ch;
+  font-size: clamp(2rem, 3.55vw, 4rem);
+}
 
 .relief-story-finale h3 span {
   display: block;
@@ -433,13 +438,13 @@ body.relief {
 .relief-story-finale h3 span + span {
   margin-block-start: .16em;
   color: var(--accent);
+  font-style: italic;
 }
 
 @media (min-width: 900px) {
   .relief-story-panel { margin-inline-start: 0; }
 
   .relief-story-title,
-  .relief-story-copy,
   .relief .relief-story-finale h3 {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, .94fr);
@@ -451,11 +456,18 @@ body.relief {
     margin-block-start: .35em;
   }
 
-  .relief-story-copy { align-items: center; }
+  .relief-story-copy {
+    display: grid;
+    grid-template-columns: minmax(0, .86fr) minmax(0, 1fr);
+    column-gap: clamp(2.25rem, 4vw, 4rem);
+    align-items: start;
+    justify-self: center;
+    inline-size: min(92%, 70rem);
+  }
 
   .relief-story-copy p {
     max-inline-size: 33ch;
-    margin: 0;
+    margin-block-start: clamp(2.5rem, 5vw, 5rem);
     font-size: clamp(1.25rem, 1.8vw, 1.75rem);
   }
 

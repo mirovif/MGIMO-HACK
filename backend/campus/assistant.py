@@ -37,12 +37,11 @@ class MockAIProvider:
     )
 
     def answer(self, data, passages):
-        question = data.message.casefold()
-        reply = next((answer for terms, answer in self.answers if any(term in question for term in terms)),
-                     'Могу подсказать, где найти расписание, как запросить справку или как обратиться в деканат. Для другого вопроса используйте сценарий «Не знаю, куда обратиться».')
         if passages:
-            reply += ' Ниже есть совпадения в проиндексированных документах. Проверьте текст по ссылкам.'
-        return reply
+            return passages[0]['body']
+        question = data.message.casefold()
+        return next((answer for terms, answer in self.answers if any(term in question for term in terms)),
+                    'Могу подсказать, где найти расписание, как запросить справку или как обратиться в деканат. Для другого вопроса используйте сценарий «Не знаю, куда обратиться».')
 
 
 class OpenRouterProvider:
@@ -82,5 +81,7 @@ def send_message(data: ChatInput, request: Request, _user=Depends(student_only))
     with request.app.state.engine.connect() as conn:
         passages = search(conn, data.message)
     provider: AIProvider = MockAIProvider() if mode == 'mock' else OpenRouterProvider()
-    sources = {item['url']: {'url': item['url'], 'title': item['title'], 'excerpt': item['body'][:260]} for item in passages}
+    sources = {}
+    for item in passages:
+        sources.setdefault(item['url'], {'url': item['url'], 'title': item['title'], 'excerpt': item['body'][:260]})
     return {'message': provider.answer(data, passages), 'demo': mode == 'mock', 'sources': list(sources.values())}

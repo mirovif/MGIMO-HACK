@@ -1,34 +1,38 @@
 const members = [
   {
-    name: 'Имя Фамилия',
-    role: 'Разработка',
-    university: '[Название университета]',
-    contribution: 'Интерфейс и логика студенческого кабинета.',
-    achievements: '[Достижения и регалии]',
-    photoSrc: '',
+    name: 'Шварц Артемий',
+    photoSrc: '../assets/team-artemiy.webp',
+    bio: [
+      'Стажёр-разработчик в Сбере',
+      'Стажёр-исследователь в Сколтехе',
+      'Студент РЭУ им. Г. В. Плеханова, ВШФ',
+    ],
   },
   {
-    name: 'Имя Фамилия',
-    role: 'Дизайн',
-    university: '[Название университета]',
-    contribution: 'Визуальная система и навигация.',
-    achievements: '[Достижения и регалии]',
-    photoSrc: '',
+    name: 'Максим Чибисов',
+    photoSrc: '../assets/team-maxim.webp',
+    bio: [
+      'Студент программы «ТОП-ИИ», РЭУ им. Г. В. Плеханова',
+      'Стажёр-разработчик в Сбере',
+      'Студент Школы 21',
+    ],
   },
   {
-    name: 'Имя Фамилия',
-    role: 'Исследования',
-    university: '[Название университета]',
-    contribution: 'Студенческие сценарии и обратная связь.',
-    achievements: '[Достижения и регалии]',
-    photoSrc: '',
+    name: 'Иван Мирошкин',
+    photoSrc: '../assets/team-ivan.webp',
+    bio: [
+      'Студент программы «ТОП-ИИ», РЭУ им. Г. В. Плеханова',
+      'Руководитель Data Science Club',
+      'Стажёр-разработчик в Сбере',
+      'Студент Школы 21',
+    ],
   },
 ];
 
 const htmlEntities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const escapeHtml = (value) => value.replace(/[&<>"]/g, (character) => htmlEntities[character]);
 
-function memberMarkup({ name, role, university, contribution, achievements, photoSrc }) {
+function memberMarkup({ name, photoSrc, bio }) {
   return `
     <li class="relief-team-member">
       <div class="relief-team-portrait" data-team-reveal aria-hidden="true">
@@ -36,10 +40,9 @@ function memberMarkup({ name, role, university, contribution, achievements, phot
       </div>
       <div class="relief-team-member-info" data-team-reveal>
         <h3>${escapeHtml(name)}</h3>
-        <p class="relief-team-role">${escapeHtml(role)}</p>
-        <p class="relief-team-university">${escapeHtml(university)}</p>
-        ${contribution ? `<p class="relief-team-contribution">${escapeHtml(contribution)}</p>` : ''}
-        ${achievements ? `<p class="relief-team-achievements">${escapeHtml(achievements)}</p>` : ''}
+        <ul class="relief-team-bio" role="list">
+          ${bio.map((detail) => `<li>${escapeHtml(detail)}</li>`).join('')}
+        </ul>
       </div>
     </li>`;
 }
@@ -48,10 +51,6 @@ export const teamMarkup = `
   <section class="relief-team relief-wrap" id="team" aria-labelledby="relief-team-title">
     <header class="relief-team-intro">
       <h2 id="relief-team-title" data-team-reveal>Люди за <span>UTRET.</span></h2>
-      <div class="relief-team-copy" data-team-reveal>
-        <p>Мы студенты разных университетов, которых объединила одна идея: сделать взаимодействие с университетом проще и интереснее.</p>
-        <p>UTRET начался с желания пересмотреть привычный студенческий кабинет. Мы объединили разработку, дизайн и собственный студенческий опыт, чтобы создать то, чем хотели бы пользоваться сами.</p>
-      </div>
     </header>
     <ul class="relief-team-members" role="list">
       ${members.map(memberMarkup).join('')}

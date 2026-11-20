@@ -1,14 +1,11 @@
 'use client'
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, ApiError, errorText, type Profile } from '../lib'
 import { Busy, Problem } from '../ui'
 import { Workspace } from '../workspace'
 
 export default function LksPage() {
-  const router = useRouter()
   const [user, setUser] = useState<Profile | null>()
   const [route, setRoute] = useState('')
   const [error, setError] = useState('')
@@ -42,10 +39,7 @@ export default function LksPage() {
     return () => window.removeEventListener('campus-session-expired', expired)
   }, [])
 
-  if (user) return <Workspace key={user.id} user={user} route={route} onLogout={() => {
-    setUser(null)
-    router.replace('/')
-  }} />
+  if (user) return <Workspace key={user.id} user={user} route={route} onLogout={() => window.location.replace('/')} />
 
   if (user === undefined) return (
     <main className="lks-session">
@@ -71,8 +65,8 @@ function Login({ onLogin }: { onLogin: (profile: Profile) => void }) {
     finally { setLoading(false) }
   }
   return <main className="login-layout">
-    <aside className="login-brand"><Link href="/" className="brand-inverse">Campus OS</Link><p>Деканат<br /><em>между парами.</em></p><span>РЭУ имени Г. В. Плеханова</span></aside>
-    <div className="login-main"><Link href="/" className="text-link">На главную</Link>
+    <aside className="login-brand"><a href="/" className="brand-inverse">Campus OS</a><p>Деканат<br /><em>между парами.</em></p><span>РЭУ имени Г. В. Плеханова</span></aside>
+    <div className="login-main"><a href="/" className="text-link">На главную</a>
       <h1>Войти в кабинет</h1><p>Используйте конкурсную учётную запись.</p>
       <form className="stack" onSubmit={submit}>
         <label>Логин<input autoComplete="username" value={login} onChange={event => setLogin(event.target.value)} required maxLength={64} /></label>

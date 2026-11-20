@@ -671,14 +671,27 @@ function makeOrbit(radius, squash, tilt, opacity, color) {
   );
 }
 
-function modelUrl(name) {
-  return new URL(`./models/${name}.glb`, import.meta.url).href;
-}
-
-export async function createUniverseScene(canvas, graph, handlers) {
+export async function createUniverseScene(canvas, graph, handlers, loadSignal) {
   const attributes = { alpha: true, antialias: true, powerPreference: 'high-performance' };
   const context = canvas.getContext('webgl2', attributes);
   if (!context) return null;
+
+  const loader = new GLTFLoader();
+  const modelDirectory = new URL('./models/', import.meta.url);
+  const modelFiles = await Promise.all([
+    'mgimo_chrome_sculpture',
+    'mgimo_faculty_constellation',
+    'mgimo_program_artifact',
+  ].map(async (name) => {
+    const response = await fetch(new URL(`${name}.glb`, modelDirectory), { signal: loadSignal });
+    if (!response.ok) throw new Error(`Не удалось загрузить модель ${name}.`);
+    return response.arrayBuffer();
+  }));
+  if (loadSignal.aborted) return null;
+  const [gyroscope, constellation, programModel] = await Promise.all(
+    modelFiles.map((file) => loader.parseAsync(file, modelDirectory.href)),
+  );
+
   const renderer = new THREE.WebGLRenderer({ canvas, context, ...attributes });
   renderer.setClearColor(0x080a10, 0);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -694,20 +707,6 @@ export async function createUniverseScene(canvas, graph, handlers) {
   rim.position.set(3, -1, -3);
   world.add(fill, kick, rim);
 
-  const loader = new GLTFLoader();
-  let models;
-  try {
-    models = await Promise.all([
-      loader.loadAsync(modelUrl('mgimo_chrome_sculpture')),
-      loader.loadAsync(modelUrl('mgimo_faculty_constellation')),
-      loader.loadAsync(modelUrl('mgimo_program_artifact')),
-    ]);
-  } catch (error) {
-    studio.dispose();
-    renderer.dispose();
-    throw error;
-  }
-  const [gyroscope, constellation, programModel] = models;
   const crystal = makeOrbitalCrystal();
   const templates = {
     planet: makeArtTemplate(programModel.scene, (name) => !/satellites|tethers/i.test(name)),
@@ -833,7 +832,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
   let width = 1;
   let height = 1;
   let mobile = initialMobile;
-  let enabled = true;
+  let enabled = false;
   let disposed = false;
   let frame = 0;
   let lastFrame = 0;
@@ -877,7 +876,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
       return;
     }
     if (selection.type === 'subject') {
-      const program = objects.get(ancestry.at(-2).id);
+      const program = objects.get(ancestry[ancestry.length - 2].id);
       target.copy(subjectWorld(selection.id, projectedSubject) ?? program.origin);
       target.lerp(program.origin, .57);
     } else {

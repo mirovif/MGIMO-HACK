@@ -158,15 +158,52 @@ def test_mock_ai_and_fts(tmp_path, monkeypatch):
     app = create_app(f'sqlite:///{(tmp_path / "campus.db").as_posix()}')
     with TestClient(app) as client:
         login(client, 'student1')
-        first = client.post('/api/assistant/messages', json={'message': 'Как получить справку?'})
-        second = client.post('/api/assistant/messages', json={'message': 'Где посмотреть расписание?'})
-        assert first.json()['demo'] and first.json()['sources'] == []
-        assert 'справк' in first.json()['message'].lower()
-        assert first.json()['message'] != second.json()['message']
+        fallback = client.post('/api/assistant/messages', json={'message': 'Как устроен фотосинтез?'})
+        assert fallback.json()['demo'] and fallback.json()['sources'] == []
+        assert 'Не знаю, куда обратиться' in fallback.json()['message']
         with app.state.engine.begin() as conn:
-            import_document(conn, 'Тестовый документ', 'https://rea.ru/sveden/document', 'Проверочный текст: справка об обучении.', {'test': True})
-        reply = client.post('/api/assistant/messages', json={'message': 'справка об обучении'}).json()
+            import_document(conn, 'Тестовый документ', 'https://rea.ru/sveden/document', 'Проверочный текст: соревнования по робототехнике.', {'test': True})
+        reply = client.post('/api/assistant/messages', json={'message': 'Есть ли робототехника?'}).json()
         assert reply['sources'][0]['url'] == 'https://rea.ru/sveden/document'
+        assert 'робототехнике' in reply['message']
+
+
+def test_official_university_answers_survive_app_restart(tmp_path, monkeypatch):
+    monkeypatch.setenv('AI_MODE', 'mock')
+    url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
+    app = create_app(url)
+    assistant_path = '/api/assistant/messages'
+    with TestClient(app) as client:
+        assert client.post(assistant_path, json={'message': 'Как получить справку об обучении?'}).status_code == 401
+        login(client, 'student1')
+        question = {'message': 'Как получить справку об обучении?'}
+        first = client.post(assistant_path, json=question).json()
+        assert 'student.rea.ru' in first['message']
+        assert any(source['url'].startswith('https://rea.ru/66316-') for source in first['sources'])
+
+        retakes = client.post(assistant_path, json={'message': 'Где посмотреть расписание пересдач?'}).json()
+        assert 'пересдач' in retakes['message']
+        assert any(source['url'].startswith('https://rea.ru/66438-') for source in retakes['sources'])
+
+        schedule = client.post(assistant_path, json={'message': 'Где узнать расписание?'}).json()
+        assert 'rasp.rea.ru' in schedule['message']
+        assert schedule['sources'][0]['url'].startswith('https://www.rea.ru/news/58445-')
+
+        dean = client.post(assistant_path, json={'message': 'Где деканат?'}).json()
+        assert '116' in dean['message']
+        assert dean['sources'][0]['url'].endswith('/otdel-obrascheniy-studentov-i-prepodavateley')
+        token = client.cookies['campus_session']
+
+        with app.state.engine.connect() as conn:
+            ids = conn.exec_driver_sql('SELECT id FROM document_chunks ORDER BY id').scalars().all()
+            assert ids
+
+    restarted = create_app(url)
+    with TestClient(restarted) as client:
+        client.cookies.set('campus_session', token)
+        assert client.post(assistant_path, json=question).json() == first
+        with restarted.state.engine.connect() as conn:
+            assert conn.exec_driver_sql('SELECT id FROM document_chunks ORDER BY id').scalars().all() == ids
 
 
 def test_attachment_favorites_and_origin(tmp_path):

@@ -25,11 +25,36 @@ async function withoutOverflow(page: Page) {
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360)
 }
 
-test('public homepage shows the schedule demo and cabinet capabilities at 360 px', async ({ browser }) => {
+test('UTRET opens the cabinet and the assistant cites REU at 360 px', async ({ browser }) => {
   const context = await browser.newContext(mobile)
   const page = await context.newPage()
   try {
     await page.goto('/')
+    await expect(page.getByRole('heading', { level: 1, name: /Учёба выходит за рамки аудитории/ })).toBeVisible()
+    const cabinet = page.getByRole('banner').getByRole('link', { name: 'Личный кабинет', exact: true })
+    await expect(cabinet).toHaveAttribute('href', '/lks')
+    await withoutOverflow(page)
+    await cabinet.click()
+    await expect(page).toHaveURL('/lks')
+    await page.getByLabel('Логин').fill('student1')
+    await page.getByLabel('Пароль').fill(password)
+    await page.getByRole('button', { name: 'Войти', exact: true }).click()
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Анна')
+    await navigate(page, 'ИИ-помощник')
+    await page.getByRole('button', { name: 'Как получить справку?', exact: true }).click()
+    const reply = page.getByRole('log').locator('.chat-turn.assistant')
+    await expect(reply).toContainText('Справку об обучении и другие документы заказывают в официальном личном кабинете РЭУ')
+    await expect(reply.getByRole('link', { name: 'РЭУ · Справки и документы в личном кабинете' })).toHaveAttribute('href', /^https:\/\/rea\.ru\//)
+  } finally {
+    await context.close()
+  }
+})
+
+test('Campus OS overview shows the schedule demo and cabinet capabilities at 360 px', async ({ browser }) => {
+  const context = await browser.newContext(mobile)
+  const page = await context.newPage()
+  try {
+    await page.goto('/campus-os')
     await expect(page.getByRole('heading', { level: 1, name: 'Деканат между парами.', exact: true })).toBeVisible()
     await expect(page.getByRole('link', { name: 'LKS', exact: true })).toHaveCount(1)
     const lks = page.getByRole('banner').getByRole('link', { name: 'LKS', exact: true })
@@ -56,7 +81,7 @@ test('public homepage shows the schedule demo and cabinet capabilities at 360 px
     await possibilities.scrollIntoViewIfNeeded()
     const initialScroll = await page.evaluate(() => window.scrollY)
     await possibilities.click()
-    await expect(page).toHaveURL('/#possibilities')
+    await expect(page).toHaveURL('/campus-os#possibilities')
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(initialScroll)
     await expect(page.getByRole('heading', { name: 'Возможности кабинета', exact: true })).toBeInViewport()
 
@@ -81,7 +106,7 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
   const staff = await staffContext.newPage()
   const stranger = await strangerContext.newPage()
   try {
-    await student.goto('/')
+    await student.goto('/campus-os')
     await expect(student.getByRole('heading', { level: 1, name: 'Деканат между парами.', exact: true })).toBeVisible()
     await expect(student.getByRole('navigation')).toHaveCount(0)
     await expect(student.getByLabel('Логин')).toHaveCount(0)
@@ -95,7 +120,7 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
     await student.getByLabel('Пароль').fill(password)
     await student.getByRole('button', { name: 'Войти', exact: true }).click()
     await expect(student.getByRole('heading', { level: 1 })).toContainText('Анна')
-    await student.goto('/')
+    await student.goto('/campus-os')
     await expect(lks).toBeVisible()
     await student.goto('/lks')
     await expect(student.getByRole('heading', { level: 1 })).toContainText('Анна')
@@ -180,10 +205,10 @@ test('all student sections and the remaining scenarios work at 360 px', async ({
 
     await navigate(page, 'ИИ-помощник')
     await page.getByRole('button', { name: 'Как получить справку?' }).click()
-    await expect(page.getByText('Демонстрационный ответ', { exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'РЭУ · Справки и документы в личном кабинете' })).toBeVisible()
     await page.getByLabel('Ваш вопрос').fill('Где находится аудитория?')
     await page.getByRole('button', { name: 'Отправить сообщение' }).click()
-    await expect(page.getByText('Демонстрационный ответ', { exact: true })).toHaveCount(2)
+    await expect(page.getByText('Демонстрационный ответ', { exact: true })).toHaveCount(1)
     await withoutOverflow(page)
 
     await navigate(page, 'Решить ситуацию')
@@ -226,7 +251,7 @@ test('all student sections and the remaining scenarios work at 360 px', async ({
     await withoutOverflow(page)
     await page.getByRole('main').getByRole('button', { name: 'Выйти' }).click()
     await expect(page).toHaveURL('/')
-    await expect(page.getByRole('link', { name: 'LKS', exact: true })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Личный кабинет', exact: true })).toBeVisible()
   } finally {
     await context.close()
   }

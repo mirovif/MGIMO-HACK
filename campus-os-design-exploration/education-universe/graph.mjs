@@ -149,8 +149,8 @@ export function adaptGraph(raw) {
   };
 }
 
-export async function loadGraph(url = new URL('./data/education_universe.graph.json', import.meta.url)) {
-  const response = await fetch(url);
+export async function loadGraph(url = new URL('./data/education_universe.graph.json', import.meta.url), { signal } = {}) {
+  const response = await fetch(url, { signal, priority: 'high' });
   if (!response.ok) throw new Error('Не удалось загрузить академический каталог.');
   return adaptGraph(await response.json());
 }

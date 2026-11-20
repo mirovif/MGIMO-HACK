@@ -3,10 +3,6 @@
 }
 
 .relief-team-intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, .9fr);
-  align-items: start;
-  gap: clamp(2rem, 7vw, 8rem);
   margin-block-end: clamp(2.25rem, 5vw, 5rem);
 }
 
@@ -16,17 +12,6 @@
 
 .relief-team-intro h2 span {
   color: var(--accent);
-}
-
-.relief-team-copy {
-  --team-reveal-delay: 80ms;
-
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
-}
-
-.relief-team-copy p + p {
-  margin-block-start: .95em;
-  color: var(--relief-muted);
 }
 
 .relief-team-members {
@@ -40,6 +25,7 @@
 
 .relief-team-portrait {
   aspect-ratio: 4 / 5;
+  overflow: clip;
   background: var(--relief-light);
 }
 
@@ -47,6 +33,21 @@
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
+}
+
+.relief-team-portrait img[src$="/team-artemiy.webp"] {
+  scale: 1.35;
+  transform-origin: 50% 73%;
+}
+
+.relief-team-portrait img[src$="/team-maxim.webp"] {
+  scale: 1.32;
+  transform-origin: 50% 60%;
+}
+
+.relief-team-portrait img[src$="/team-ivan.webp"] {
+  scale: 1.25;
+  transform-origin: 50% 28%;
 }
 
 .relief-team-member-info {
@@ -62,31 +63,24 @@
   margin-block-end: .25rem;
 }
 
-.relief-team-role {
-  font-weight: 650;
-  color: var(--accent);
-}
-
-.relief-team-university,
-.relief-team-achievements {
+.relief-team-bio {
+  display: grid;
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: 1.5;
   color: var(--relief-muted);
 }
 
-.relief-team-contribution,
-.relief-team-achievements {
-  margin-block-start: .5rem;
+.relief-team-bio li:first-child {
+  font-weight: 650;
+  color: var(--accent);
 }
 
 @media (min-width: 591px) {
   .relief-team-member:nth-child(2) { --team-portrait-delay: 55ms; }
   .relief-team-member:nth-child(3) { --team-portrait-delay: 110ms; }
-}
-
-@media (max-width: 800px) {
-  .relief-team-intro {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.35rem;
-  }
 }
 
 @media (max-width: 590px) {

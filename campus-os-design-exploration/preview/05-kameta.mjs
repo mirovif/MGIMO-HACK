@@ -1,7 +1,7 @@
 export const kametaMarkup = `
   <section id="kameta" class="relief-kameta relief-wrap" aria-labelledby="relief-kameta-title">
-    <h2 id="relief-kameta-title">Знакомься, <span>Камета</span></h2>
-    <div class="relief-kameta-art" role="img" aria-label="Лавандовый робот Камета с орбитальным кольцом">
+    <h2 id="relief-kameta-title">Знакомься, <span>Комета</span></h2>
+    <div class="relief-kameta-art" role="img" aria-label="Лавандовый робот Комета с орбитальным кольцом">
       <div class="relief-kameta-character">
         <img class="relief-kameta-body" src="../assets/kameta.webp" width="1122" height="1402"
           alt="" loading="lazy" decoding="async">
@@ -9,7 +9,7 @@ export const kametaMarkup = `
           alt="" loading="lazy" decoding="async">
       </div>
     </div>
-    <p>Камета - ИИ-помощник UTRET, который поможет разобраться в университетских вопросах. Он ориентируется во внутренней структуре вуза, его правилах и документах. Не знаешь, как получить справку, куда подать заявление или к кому обратиться? Просто спроси Камету, и он подскажет, что делать.</p>
+    <p>Комета - ИИ-помощник UTRET, который поможет разобраться в университетских вопросах. Он ориентируется во внутренней структуре вуза, его правилах и документах. Не знаешь, как получить справку, куда подать заявление или к кому обратиться? Просто спроси Комету, и он подскажет, что делать.</p>
   </section>`;
 
 export function mountKameta(section) {

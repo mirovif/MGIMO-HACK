@@ -9,6 +9,7 @@ __pycache__/
 !.env.example
 node_modules/
 .next/
+/frontend/public/
 test-results/
 playwright-report/
 next-env.d.ts
