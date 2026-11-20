@@ -228,6 +228,7 @@ select { appearance: none; padding-right: 32px; background-repeat: no-repeat; ba
 .chat-turn.user { justify-self: end; background: var(--tonal); }
 .chat-author { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 5px; }
 .chat-sources { display: grid; gap: 6px; padding-top: 9px; margin-top: 9px; border-top: 1px solid var(--line); }
+.chat-sources ol { display: grid; gap: 6px; margin: 0; padding-inline-start: 23px; }
 .chat-form { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 7px; }
 .chat-form .button { width: 47px; padding: 9px; }
 

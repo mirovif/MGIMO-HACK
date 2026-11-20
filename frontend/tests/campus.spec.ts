@@ -74,6 +74,10 @@ test('UTRET opens a matching cabinet with the REU map, catalog and Comet at 360 
     await expect(greeting).toBeVisible()
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await expect(arm).toHaveCSS('animation-name', 'none')
+    await page.getByLabel('Ваш вопрос').fill('Пароль: test-example')
+    await page.getByRole('button', { name: 'Отправить сообщение' }).click()
+    await expect(page.getByRole('log').getByText('Сообщение скрыто', { exact: true })).toBeVisible()
+    await expect(page.getByRole('log')).not.toContainText('test-example')
   } finally {
     await context.close()
   }

@@ -7,7 +7,7 @@ import { Busy, External, Problem, Section } from './ui'
 import '../../campus-os-design-exploration/kameta-wave.css'
 
 type Turn = { role: 'user' | 'assistant'; content: string; demo?: boolean; sources?: { url: string; title: string; excerpt: string }[] }
-type Answer = { message: string; demo: boolean; sources: NonNullable<Turn['sources']> }
+type Answer = { message: string; demo: boolean; sources: NonNullable<Turn['sources']>; blocked?: boolean }
 const prompts = ['Как получить справку?', 'Как запросить пересдачу?', 'Где посмотреть расписание?']
 
 export function AssistantPage({ user }: { user: Profile }) {
@@ -22,7 +22,9 @@ export function AssistantPage({ user }: { user: Profile }) {
   const running = useRef(false)
 
   useEffect(() => {
-    try { sessionStorage.setItem(storageKey, JSON.stringify(turns.slice(-30))) } catch {}
+    if (!pending) {
+      try { sessionStorage.setItem(storageKey, JSON.stringify(turns.slice(-30))) } catch {}
+    }
     if (log.current) log.current.scrollTop = log.current.scrollHeight
   }, [turns, storageKey, pending])
 
@@ -34,10 +36,9 @@ export function AssistantPage({ user }: { user: Profile }) {
     const conversation: Turn[] = [...turns, { role: 'user', content }]
     setTurns(conversation)
     try {
-      const answer = await api<Answer>('/assistant/messages', { method: 'POST', body: JSON.stringify({
-        message: content, history: turns.slice(-12).map(turn => ({ role: turn.role, content: turn.content.slice(0, 2000) })),
-      }) })
-      setTurns([...conversation, { role: 'assistant', content: answer.message, demo: answer.demo, sources: answer.sources }])
+      const answer = await api<Answer>('/assistant/messages', { method: 'POST', body: JSON.stringify({ message: content }) })
+      const safeConversation: Turn[] = answer.blocked ? [...turns, { role: 'user', content: 'Сообщение скрыто' }] : conversation
+      setTurns([...safeConversation, { role: 'assistant', content: answer.message, demo: answer.demo, sources: answer.sources }])
     } catch (err) { setTurns(turns); setInput(content); setError(errorText(err)) }
     finally { setPending(false); running.current = false }
   }
@@ -60,8 +61,8 @@ export function AssistantPage({ user }: { user: Profile }) {
         {turns.map((turn, index) => <article className={'chat-turn ' + turn.role} key={index}>
           <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Комета'}</strong>{turn.demo && !turn.sources?.length && <span className="badge">Демонстрационный ответ</span>}</div>
           <p className="pre-line">{turn.content}</p>
-          {!!turn.sources?.length && <div className="chat-sources"><strong>Источники</strong>{turn.sources.map(source => <div key={source.url}>
-            <External href={source.url}>{source.title}</External><p className="muted small">{source.excerpt}</p></div>)}</div>}
+          {!!turn.sources?.length && <div className="chat-sources"><strong>Источники РЭУ</strong><ol>{turn.sources.map(source =>
+            <li key={source.url}><External href={source.url}>{source.title}</External></li>)}</ol></div>}
         </article>)}
         {pending && <Busy text="Готовим ответ…" />}
       </div>
@@ -72,6 +73,6 @@ export function AssistantPage({ user }: { user: Profile }) {
         <button className="button primary" aria-label="Отправить сообщение" disabled={pending || !input.trim()}><Send size={20} /></button>
       </form>
     </div>
-    <p className="muted small icon-text"><MessageCircle size={15} /> Официальные правила сверяйте с документами РЭУ.</p>
+    <p className="muted small icon-text"><MessageCircle size={15} /> <External href="https://www.rea.ru/Sveden/document">Официальные документы РЭУ</External></p>
   </Section>
 }
