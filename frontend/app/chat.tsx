@@ -4,6 +4,7 @@ import { MessageCircle, Send } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { api, errorText, type Profile } from './lib'
 import { Busy, External, Problem, Section } from './ui'
+import '../../campus-os-design-exploration/kameta-wave.css'
 
 type Turn = { role: 'user' | 'assistant'; content: string; demo?: boolean; sources?: { url: string; title: string; excerpt: string }[] }
 type Answer = { message: string; demo: boolean; sources: NonNullable<Turn['sources']> }
@@ -45,13 +46,17 @@ export function AssistantPage({ user }: { user: Profile }) {
 
   return <Section title="Комета" text="Помощник по расписанию, справкам и вопросам деканата.">
     <div className="panel chat">
-      <div className="chat-log" role="log" aria-label="История чата" ref={log}>
-        {!turns.length && <div className="chat-intro">
+      <header className="chat-intro">
+        <div className="chat-mascot kameta-wave" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="chat-mascot" src="/assets/kameta.webp" alt="" width={1122} height={1402} />
-          <div><h2>Чем помочь?</h2><p>К ответам по материалам РЭУ прикрепляю источник.</p></div>
-          <div className="button-group">{prompts.map(prompt => <button type="button" key={prompt} className="button secondary" onClick={() => void send(prompt)}>{prompt}</button>)}</div>
-        </div>}
+          <img className="kameta-body" src="/assets/kameta.webp" alt="" width={1122} height={1402} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="kameta-arm" src="/assets/kameta.webp" alt="" width={1122} height={1402} />
+        </div>
+        <div><h2>Как вам помочь?</h2><p>К ответам по материалам РЭУ прикрепляю источник.</p></div>
+      </header>
+      <div className="chat-log" role="log" aria-label="История чата" ref={log}>
+        {!turns.length && <div className="button-group">{prompts.map(prompt => <button type="button" key={prompt} className="button secondary" onClick={() => void send(prompt)}>{prompt}</button>)}</div>}
         {turns.map((turn, index) => <article className={'chat-turn ' + turn.role} key={index}>
           <div className="chat-author"><strong>{turn.role === 'user' ? 'Вы' : 'Комета'}</strong>{turn.demo && !turn.sources?.length && <span className="badge">Демонстрационный ответ</span>}</div>
           <p className="pre-line">{turn.content}</p>

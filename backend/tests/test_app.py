@@ -168,6 +168,37 @@ def test_mock_ai_and_fts(tmp_path, monkeypatch):
         assert 'робототехнике' in reply['message']
 
 
+def test_polza_ai_uses_server_config_and_university_sources(tmp_path, monkeypatch):
+    base_url = 'https://polza.ai/api/v1'
+    model = 'deepseek/deepseek-v4.1-flash-1017'
+    question = 'Как получить справку об обучении?'
+    answer = 'Закажите справку в официальном личном кабинете РЭУ.'
+    monkeypatch.setenv('AI_MODE', 'polza')
+    monkeypatch.setenv('LLM_API_KEY', 'test-credential')
+    monkeypatch.setenv('LLM_BASE_URL', base_url)
+    monkeypatch.setenv('LLM_MODEL', model)
+
+    def completion(url, *, headers, json, timeout):
+        assert url == base_url + '/chat/completions'
+        assert headers['Authorization'] == 'Bearer test-credential'
+        assert json['model'] == model
+        assert 'student.rea.ru' in json['messages'][0]['content']
+        assert json['messages'][-1] == {'role': 'user', 'content': question}
+        return httpx.Response(200, request=httpx.Request('POST', url), json={
+            'choices': [{'message': {'content': answer}}],
+        })
+
+    monkeypatch.setattr(httpx, 'post', completion)
+    app = create_app(f'sqlite:///{(tmp_path / "campus.db").as_posix()}')
+    with TestClient(app) as client:
+        login(client, 'student1')
+        response = client.post('/api/assistant/messages', json={'message': question})
+        assert response.status_code == 200
+        reply = response.json()
+        assert reply['message'] == answer and not reply['demo']
+        assert reply['sources'][0]['url'].startswith('https://rea.ru/66316-')
+
+
 def test_official_university_answers_survive_app_restart(tmp_path, monkeypatch):
     monkeypatch.setenv('AI_MODE', 'mock')
     url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'

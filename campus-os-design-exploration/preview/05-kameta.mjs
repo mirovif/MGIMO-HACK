@@ -3,9 +3,9 @@ export const kametaMarkup = `
     <h2 id="relief-kameta-title">Знакомься, <span>Комета</span></h2>
     <div class="relief-kameta-art" role="img" aria-label="Лавандовый робот Комета с орбитальным кольцом">
       <div class="relief-kameta-character">
-        <img class="relief-kameta-body" src="../assets/kameta.webp" width="1122" height="1402"
+        <img class="kameta-body" src="../assets/kameta.webp" width="1122" height="1402"
           alt="" loading="lazy" decoding="async">
-        <img class="relief-kameta-arm" src="../assets/kameta.webp" width="1122" height="1402"
+        <img class="kameta-arm" src="../assets/kameta.webp" width="1122" height="1402"
           alt="" loading="lazy" decoding="async">
       </div>
     </div>
@@ -19,12 +19,12 @@ export function mountKameta(section) {
   if (typeof IntersectionObserver !== 'function') return;
 
   const art = section.querySelector('.relief-kameta-art');
-  const arm = art.querySelector('.relief-kameta-arm');
+  const arm = art.querySelector('.kameta-arm');
   const motion = matchMedia('(prefers-reduced-motion: no-preference)');
   let greeted = false;
 
   function stopGreeting() {
-    art.classList.remove('is-greeting');
+    art.classList.remove('kameta-wave');
   }
 
   const observer = new IntersectionObserver(([entry]) => {
@@ -33,7 +33,7 @@ export function mountKameta(section) {
       stopGreeting();
     } else if (!greeted && motion.matches && entry.intersectionRatio >= .35) {
       greeted = true;
-      art.classList.add('is-greeting');
+      art.classList.add('kameta-wave');
     }
   }, { threshold: [0, .35] });
 

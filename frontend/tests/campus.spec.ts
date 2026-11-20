@@ -63,10 +63,17 @@ test('UTRET opens a matching cabinet with the REU map, catalog and Comet at 360 
     await expect(page.getByRole('link', { name: 'Открыть зачётку' })).toHaveAttribute('href', '#app/grades')
     await withoutOverflow(page)
     await navigate(page, 'Комета')
+    const greeting = page.getByRole('heading', { name: 'Как вам помочь?', exact: true })
+    const arm = page.locator('.chat-mascot .kameta-arm')
+    await expect(greeting).toBeVisible()
+    await expect(arm).toHaveCSS('animation-iteration-count', 'infinite')
     await page.getByRole('button', { name: 'Как получить справку?', exact: true }).click()
     const reply = page.getByRole('log').locator('.chat-turn.assistant')
     await expect(reply).toContainText('Справку об обучении и другие документы заказывают в официальном личном кабинете РЭУ')
     await expect(reply.getByRole('link', { name: 'РЭУ · Справки и документы в личном кабинете' })).toHaveAttribute('href', /^https:\/\/rea\.ru\//)
+    await expect(greeting).toBeVisible()
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect(arm).toHaveCSS('animation-name', 'none')
   } finally {
     await context.close()
   }

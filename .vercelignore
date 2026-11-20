@@ -2,6 +2,8 @@ design-inputs/
 design-inspiration-library/
 output/
 .venv/
+.env
+.env.*
 backend/*.sqlite3*
 backend/.campus-pytest/
 frontend/test-results/

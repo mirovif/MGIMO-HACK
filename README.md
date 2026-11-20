@@ -61,13 +61,13 @@ npm run dev --prefix frontend
 ..\.venv\Scripts\python.exe -m campus.rag PATH_TO_TEXT --title "ACTUAL_DOCUMENT_TITLE" --url "DIRECT_OFFICIAL_HTTPS_URL"
 ```
 
-Текст разбивается на фрагменты с перекрытием. SQLite использует FTS5, PostgreSQL — встроенный полнотекстовый поиск. При `AI_MODE=openrouter` тот же REST endpoint использует `OPENROUTER_API_KEY` и `OPENROUTER_MODEL`. Эти переменные задаются только на сервере. Исходно включён Mock AI, который не отправляет запросы в OpenRouter. [Официальные документы РЭУ](https://rea.ru/sveden/document)
+Текст разбивается на фрагменты с перекрытием. SQLite использует FTS5, PostgreSQL — встроенный полнотекстовый поиск. В режиме `AI_MODE=polza` Комета использует `LLM_BASE_URL`, `LLM_MODEL` и `LLM_API_KEY`. Режим `AI_MODE=openrouter` использует `OPENROUTER_API_KEY` и `OPENROUTER_MODEL`. Ключ хранится в локальном `.env` или секрете Vercel. [Модель Polza AI](https://polza.ai/models/deepseek/deepseek-v4.1-flash-1017)
 
 ## Vercel
 
 1. Импортируйте **MGIMO-HACK** из GitHub как один проект, оставьте корневой каталог репозитория и выберите `master` в настройках Production → Branch Tracking. Конфигурация Vercel Services находится в `vercel.json`. Она направляет `/api/*` в FastAPI, остальные запросы — в Next.js. Оба сервиса доступны на одном домене. [Развёртывание из Git](https://vercel.com/docs/git) · [Vercel Services](https://vercel.com/kb/guide/vercel-services)
 2. Подключите PostgreSQL, например Neon из [Vercel Marketplace](https://vercel.com/docs/postgres). Задайте `DATABASE_URL` со строкой подключения к пулу и `sslmode=require`. SQLite на Vercel не используется. Процесс не удерживает собственный пул подключений между вызовами. Turso и его SQLAlchemy-диалект изучены как вариант, для этой конфигурации выбран PostgreSQL. [FastAPI на Vercel](https://vercel.com/docs/frameworks/backend/fastapi) · [Turso SQLAlchemy](https://github.com/tursodatabase/sqlalchemy-libsql)
-3. Для конкурсной БД задайте `DEMO_SEED=true`, `DEMO_PASSWORD` минимум из 12 символов и `AI_MODE=mock`. В текущей версии все вымышленные демо-аккаунты используют этот общий пароль. Переменные `OPENROUTER_API_KEY` и `OPENROUTER_MODEL` в режиме mock можно оставить пустыми. При необходимости задайте `PUBLIC_ORIGIN` с точным HTTPS-адресом основного домена.
+3. Для конкурсной БД задайте `DEMO_SEED=true` и `DEMO_PASSWORD` минимум из 12 символов. Для работы Кометы через Polza AI укажите `AI_MODE=polza` и серверные переменные `LLM_*` из `.env.example`. Режим `AI_MODE=mock` подходит для демонстрации без подключения к внешней модели. При необходимости задайте `PUBLIC_ORIGIN` с точным HTTPS-адресом основного домена.
 4. После развёртывания проверьте `/api/health`, вход с выданным паролем и просмотр одной заявки после следующего развёртывания. Для публикации потребуются доступ к проекту Vercel и строка подключения PostgreSQL.
 
 ## Проверки

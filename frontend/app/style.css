@@ -220,10 +220,10 @@ select { appearance: none; padding-right: 32px; background-repeat: no-repeat; ba
 .notice h2 { margin: 4px 0; }
 .notice .text-link { margin-top: 7px; }
 .chat { display: grid; gap: 12px; }
-.chat-log { display: grid; align-content: start; gap: 12px; min-height: 290px; max-height: min(58vh, 610px); overflow: auto; padding: 4px; }
-.chat-intro { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; padding: 12px 2px; }
-.chat-intro .button-group { grid-column: 1 / -1; }
-.chat-mascot { width: 76px; height: 76px; object-fit: cover; border: 1px solid var(--line); border-radius: 5px; background: var(--tonal); }
+.chat-log { display: grid; align-content: start; gap: 12px; min-height: 210px; max-height: min(48svh, 610px); overflow: auto; padding: 4px; }
+.chat-intro { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 4px; }
+.chat-mascot { --kameta-wave-repetitions: infinite; position: relative; width: 76px; height: 76px; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: var(--tonal); }
+.chat-mascot img { position: absolute; inset-inline-start: 0; inset-block-start: 50%; width: 100%; height: auto; translate: 0 -50%; }
 .chat-turn { border-radius: 5px; padding: 11px; background: var(--paper); width: fit-content; max-width: min(92%, 720px); }
 .chat-turn.user { justify-self: end; background: var(--tonal); }
 .chat-author { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 5px; }
@@ -259,7 +259,7 @@ select { appearance: none; padding-right: 32px; background-repeat: no-repeat; ba
   .mobile-grade-kind { display: block; margin-top: 3px; }
   .grades-header :last-child, .grade .badge { justify-self: end; }
   .chat { padding: 11px; }
-  .chat-log { min-height: 230px; }
+  .chat-log { min-height: 150px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
