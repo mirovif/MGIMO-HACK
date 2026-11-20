@@ -1,0 +1,108 @@
+.relief-kameta {
+  display: grid;
+  grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr);
+  grid-template-areas: "title mascot" "copy mascot";
+  align-items: center;
+  column-gap: clamp(2rem, 4.5vw, 5rem);
+  row-gap: clamp(1rem, 2.5vw, 2.1rem);
+  padding-block: clamp(3.5rem, 7vw, 7rem);
+}
+
+.relief .relief-kameta h2 {
+  grid-area: title;
+  align-self: end;
+  font: italic 600 var(--relief-section-title-size)/.97 var(--serif-font);
+  letter-spacing: -.052em;
+}
+
+.relief-kameta h2 span {
+  display: block;
+  color: var(--accent);
+}
+
+.relief .relief-kameta > p {
+  grid-area: copy;
+  align-self: start;
+  font-size: clamp(1rem, 1.48vw, 1.24rem);
+  color: var(--relief-muted);
+}
+
+.relief-kameta-art {
+  grid-area: mascot;
+  position: relative;
+  isolation: isolate;
+  justify-self: center;
+  inline-size: min(100%, 39rem);
+  aspect-ratio: 1.08;
+  overflow: clip;
+  perspective: 60rem;
+}
+
+.relief-kameta-art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 52%, #6555a44d, #3b387129 48%, transparent 72%);
+}
+
+.relief-kameta-character {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  inline-size: 105%;
+  aspect-ratio: 1122 / 1402;
+  translate: -50% -50%;
+}
+
+.relief-kameta-character img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.relief-kameta-arm { visibility: hidden; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .relief-kameta-art.is-greeting .relief-kameta-character {
+    animation: relief-kameta-turn 3.15s ease-in-out both;
+  }
+
+  .relief-kameta-art.is-greeting .relief-kameta-body {
+    clip-path: polygon(0 0, 100% 0, 100% 56.1%, 71.5% 56.1%,
+      69.7% 58.6%, 70.1% 61.4%, 72% 64.7%, 72.1% 66.6%, 74% 67.3%,
+      100% 67.3%, 100% 100%, 0 100%);
+  }
+
+  .relief-kameta-art.is-greeting .relief-kameta-arm {
+    visibility: visible;
+    clip-path: polygon(64.6% 56.4%, 100% 56.4%, 100% 67.3%, 73.7% 67.3%,
+      71.9% 64.6%, 69% 62.4%, 66.3% 60.7%, 64.2% 58.5%);
+    transform-origin: 68.3% 59.1%;
+    animation: relief-kameta-wave 3.15s ease-in-out both;
+  }
+
+  @keyframes relief-kameta-turn {
+    0%, 100% { transform: none; }
+    16% { transform: translateY(.25rem) rotateY(-22deg) rotateZ(-8deg); }
+    34% { transform: translateY(-.4rem) rotateY(13deg) rotateZ(4deg); }
+    65% { transform: translateY(-.25rem) rotateY(-9deg) rotateZ(-3deg); }
+  }
+
+  @keyframes relief-kameta-wave {
+    0%, 14%, 90%, 100% { transform: rotate(0); }
+    29%, 48%, 68% { transform: rotate(-30deg); }
+    38%, 58%, 78% { transform: rotate(-11deg); }
+  }
+}
+
+@media (max-width: 800px) {
+  .relief-kameta {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "mascot" "copy";
+    row-gap: .9rem;
+  }
+
+  .relief-kameta-art { inline-size: min(100%, 29rem); }
+}

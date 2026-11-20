@@ -19,19 +19,20 @@ export function date({ datetime, date: label }) {
   return `<time datetime="${datetime}">${label}</time>`;
 }
 
-export function navigationLinks() {
-  return navigation.map(([id, label]) => `<a href="#${id}">${label}</a>`).join('');
+export function navigationLinks(items = navigation) {
+  return items.map(([id, label]) => `<a href="#${id}">${label}</a>`).join('');
 }
 
-export function header(siteName) {
+export function header(siteName, items = navigation) {
+  const links = navigationLinks(items);
   return `
     <a class="skip-link" href="#content">К содержанию</a>
     <div class="preview-header">
       <a class="wordmark" href="#top" aria-label="${siteName ?? 'Campus OS'}, к началу страницы">${siteName ?? 'Campus<span> OS</span>'}</a>
-      <nav class="desktop-nav" aria-label="Основная навигация">${navigationLinks()}</nav>
+      <nav class="desktop-nav" aria-label="Основная навигация">${links}</nav>
       <button class="account-link" type="button" aria-disabled="true">Личный кабинет</button>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav">Меню</button>
-      <nav id="mobile-nav" class="mobile-nav" aria-label="Навигация по разделам" hidden>${navigationLinks()}</nav>
+      <nav id="mobile-nav" class="mobile-nav" aria-label="Навигация по разделам" hidden>${links}</nav>
     </div>`;
 }
 

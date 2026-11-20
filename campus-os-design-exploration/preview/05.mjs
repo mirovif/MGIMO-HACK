@@ -1,12 +1,17 @@
-import { site, picture, date, header, videoMarkup, startPage } from './shared.mjs';
+import { navigation, header, videoMarkup, startPage } from './shared.mjs';
 import { bookletMarkup, mountBooklet } from '../education-universe/booklet.mjs';
+import { storyMarkup, mountStory } from './05-story.mjs';
+import { kametaMarkup, mountKameta } from './05-kameta.mjs';
+import { teamMarkup, mountTeam } from './05-team.mjs';
 
-const { identity, education, news, events, highlights } = site;
 const siteName = 'UTRET';
+const utretNavigation = navigation
+  .filter(([id]) => id === 'university' || id === 'education')
+  .map(([id, label]) => [id === 'education' ? 'education-universe' : id, label]);
 
 document.body.innerHTML = `
   <header class="relief-hero" id="top">
-    ${header(siteName)}
+    ${header(siteName, utretNavigation)}
     <div class="relief-stage">
       <div class="relief-film">${videoMarkup()}</div>
       <h1 class="relief-title">
@@ -20,6 +25,7 @@ document.body.innerHTML = `
   </header>
 
   <main id="content" tabindex="-1">
+    ${storyMarkup}
     <section id="education-universe" class="education-universe" aria-labelledby="eu-title" data-education-universe>
       <header class="eu-intro">
         <h2 id="eu-title">Образовательная вселенная</h2>
@@ -40,96 +46,35 @@ document.body.innerHTML = `
       </nav>
       <div class="eu-index" data-universe-panel></div>
     </section>
+
+    <figure id="universe-explainer" class="relief-universe-explainer relief-wrap">
+      <figcaption>В UTRET <em>наглядный граф</em> показывает, как связаны факультеты, направления, программы и учебные дисциплины.</figcaption>
+      <div class="relief-universe-illustration">
+        <img src="../assets/universe-example.webp" width="1774" height="887" loading="lazy" decoding="async"
+          alt="Граф от факультета и направления до программы «Цифровая торговля и маркетплейсы» и её дисциплин.">
+      </div>
+    </figure>
+
     <section id="university" class="relief-intro relief-wrap" aria-labelledby="relief-intro-title">
-      <figure class="relief-portal">
-        ${picture('courtyard')}
-      </figure>
+      <h2 id="relief-intro-title">Навигация</h2>
       <div class="relief-intro-copy">
-        <h2 id="relief-intro-title">${identity.title}</h2>
-        <p>${identity.body}</p>
+        <p><strong>Не знаешь, как добраться до нужной аудитории?</strong> UTRET построит маршрут между корпусами, покажет расстояние и время в пути, а также подскажет, куда идти. Даже в незнакомом университете найти нужное место станет проще.</p>
       </div>
+      <figure class="relief-route-preview">
+        <img src="../assets/navigation-route.webp" width="321" height="375" loading="lazy" decoding="async"
+          alt="Маршрут между корпусами кампуса. В пути 4 минуты, расстояние 239 метров.">
+      </figure>
+      <span class="relief-route-trace" aria-hidden="true"></span>
     </section>
 
-    <section id="education" class="relief-education" aria-labelledby="relief-education-title">
-      <div class="relief-wrap">
-        <h2 id="relief-education-title">${education.title}</h2>
-        <div class="relief-education-layout">
-          <div class="relief-programs">
-            ${education.programs.map(program => `
-              <article>
-                <p class="relief-meta">${program.level}</p>
-                <h3>${program.title}</h3>
-                <p>${program.body}</p>
-              </article>
-            `).join('')}
-          </div>
-          <article class="relief-life">
-            <figure>${picture('workshop')}</figure>
-            <div>
-              <h3>${education.life.title}</h3>
-              <p>${education.life.body}</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+    ${kametaMarkup}
+    ${teamMarkup}
+  </main>`;
 
-    <section id="news" class="relief-news relief-wrap" aria-labelledby="relief-news-title">
-      <div class="relief-news-reading">
-        <h2 id="relief-news-title">${news.title}</h2>
-        <div class="relief-news-reading-list">
-          ${news.items.map(item => `
-            <article>
-              <p class="relief-meta">${item.category} · ${date(item)}</p>
-              <h3>${item.title}</h3>
-              <p>${item.body}</p>
-            </article>
-          `).join('')}
-        </div>
-      </div>
-      <figure class="relief-news-figure">${picture('glass')}</figure>
-    </section>
-
-    <section id="events" class="relief-events relief-wrap" aria-labelledby="relief-events-title">
-      <h2 id="relief-events-title">${events.title}</h2>
-      <ol>
-        ${events.items.map(item => `
-          <li>
-            <time datetime="${item.datetime}" aria-label="${item.date}">
-              <span>${item.day}</span><span>${item.month}</span>
-            </time>
-            <article>
-              <h3>${item.title}</h3>
-              <p>${item.body}</p>
-              <p class="relief-meta">${item.time} · ${item.place}</p>
-            </article>
-          </li>
-        `).join('')}
-      </ol>
-    </section>
-
-    <section class="relief-workshop relief-wrap" id="campus" aria-labelledby="relief-workshop-title">
-      <figure>${picture('atrium')}</figure>
-      <div>
-        <h2 id="relief-workshop-title">${highlights.title}</h2>
-        <p>${highlights.body}</p>
-        <p class="relief-meta">${highlights.note}</p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="relief-footer">
-    <div class="relief-wrap relief-footer-info">
-      <p>${site.disclaimer}</p>
-      <a href="#top">К началу <span aria-hidden="true">↑</span></a>
-    </div>
-    <a class="relief-footer-mark" href="#top" aria-label="${siteName}, к началу страницы">${siteName}</a>
-  </footer>`;
-
-for (const link of document.querySelectorAll('.preview-header a[href="#education"]')) {
-  link.hash = 'education-universe';
-}
 mountBooklet(document.querySelector('#student-id'));
+mountStory(document.querySelector('#campus'));
+mountKameta(document.querySelector('#kameta'));
+mountTeam(document.querySelector('#team'));
 startPage();
 
 const universe = document.querySelector('[data-education-universe]');

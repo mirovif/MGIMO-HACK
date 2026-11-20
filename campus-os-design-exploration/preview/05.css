@@ -6,9 +6,10 @@ body.relief {
   --accent: #bbcedf;
   --relief-muted: #aebdcb;
   --relief-light: #384552;
-  --relief-rule: #c1cfde33;
   --body-font: 'Golos Text', sans-serif;
   --display-font: 'Oswald', sans-serif;
+  --serif-font: 'Cormorant Garamond', Georgia, serif;
+  --relief-section-title-size: clamp(2.65rem, 5.45vw, 5.75rem);
   --relief-gutter: clamp(20px, 5.55vw, 88px);
   --relief-limit: 1600px;
   overflow-x: clip;
@@ -26,13 +27,13 @@ body.relief {
   font-weight: 650;
 }
 
-.relief p:not(.relief-meta) {
+.relief p {
   line-height: 1.6;
   max-width: 48ch;
 }
 
 .relief h2 {
-  font-size: clamp(2.8rem, 7vw, 6.25rem);
+  font-size: var(--relief-section-title-size);
   line-height: .99;
   letter-spacing: -.035em;
 }
@@ -146,12 +147,7 @@ body.relief {
   object-position: 53% center;
 }
 
-.relief-portal, .relief-life figure, .relief-news-figure, .relief-workshop figure {
-  border-radius: 3% 32% 5% 17% / 4% 39% 6% 25%;
-  overflow: clip;
-}
-
-.relief-film :is(video, img), .relief-portal img, .relief-life img, .relief-news-figure img, .relief-workshop img {
+.relief-film :is(video, img) {
   filter: saturate(.8);
 }
 
@@ -228,196 +224,285 @@ body.relief {
   mask-image: linear-gradient(transparent, #000 6% 94%, transparent);
 }
 
-.relief .education-universe .eu-intro h2 {
-  font-family: var(--display-font);
-  font-weight: 650;
-  letter-spacing: -.026em;
+.relief #eu-title {
+  font-family: var(--serif-font);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -.056em;
 }
 
 .relief [data-universe-mode="webgl"][data-universe-level="degree"] .eu-intro h2 {
-  font: 650 clamp(2.2rem, min(6.3vw, 9svh), 5.75rem)/1.03 var(--display-font);
-  letter-spacing: -.026em;
-  max-inline-size: 22ch;
+  font-size: clamp(2.2rem, min(6.3vw, 9svh), 5.75rem);
+  line-height: 1.03;
 }
 
 .relief .eu-index h3 { font-family: var(--display-font); }
+
+.relief-universe-explainer {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(3.5rem, 7.5vw, 7.5rem) clamp(1.75rem, 5vw, 4.5rem);
+}
+
+.relief-universe-explainer::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset-block: 0;
+  inset-inline: calc(50% - 50vw);
+  background: radial-gradient(ellipse 64% 55% at 63% 58%, #292d508c, #20284355 54%, transparent);
+  mask-image: linear-gradient(transparent, #000 22% 78%, transparent);
+  pointer-events: none;
+}
+
+.relief-universe-illustration {
+  position: relative;
+  aspect-ratio: 1774 / 803;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent),
+    linear-gradient(180deg, transparent, #000 4%, #000 92%, transparent);
+  mask-composite: intersect;
+}
+
+.relief-universe-illustration img {
+  position: absolute;
+  inset: auto 0 0;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.relief-universe-explainer figcaption {
+  max-inline-size: 47ch;
+  margin-block-end: clamp(1.85rem, 4vw, 4rem);
+  color: var(--ink);
+  font: 600 clamp(1.65rem, 2.65vw, 2.75rem)/1.13 var(--serif-font);
+  letter-spacing: -.026em;
+  text-wrap: pretty;
+}
+
+.relief-universe-explainer figcaption em {
+  color: var(--accent);
+}
 
 .relief-intro {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: .84fr 1.16fr;
-  gap: clamp(2.5rem, 8vw, 10rem);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "title title" "map copy";
+  column-gap: clamp(2rem, 5vw, 6rem);
   align-items: center;
-  padding-block: clamp(6rem, 13vw, 12rem);
+  padding-block: clamp(6rem, 10vw, 10rem) clamp(6rem, 12vw, 12rem);
 }
 
-.relief-portal {
-  position: relative;
-  aspect-ratio: 1.25;
-  isolation: isolate;
+.relief-intro::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset-block: 6%;
+  inset-inline: calc(50% - 50vw);
+  background: radial-gradient(ellipse at 28% 58%, #37577875, #23344948 42%, transparent 68%);
+  pointer-events: none;
 }
 
-.relief-portal img, .relief-life img, .relief-news-figure img, .relief-workshop img {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  object-fit: cover;
-}
-
-.relief-portal img { object-position: 63% 55%; }
-.relief-intro-copy h2 { max-width: 12ch; text-wrap: balance; }
-.relief-intro-copy p {
-  margin: clamp(1.3rem, 2.8vw, 2.25rem) 0 0 clamp(0rem, 4vw, 3rem);
-  font-size: clamp(1rem, 1.55vw, 1.3rem);
-}
-
-.relief-education {
-  position: relative;
-  isolation: isolate;
-  padding-block: clamp(4rem, 12vw, 11rem);
-}
-
-.relief-education h2 { margin-bottom: clamp(2.25rem, 5.5vw, 5rem); }
-.relief-education-layout {
-  display: grid;
-  grid-template-columns: 1.04fr .96fr;
-  align-items: start;
-  gap: clamp(2.25rem, 10vw, 11rem);
-}
-
-.relief-programs {
-  display: grid;
-  gap: clamp(1.8rem, 5vw, 4.75rem);
-  align-self: center;
-}
-
-.relief-programs article {
-  position: relative;
-  max-width: 34rem;
-}
-.relief-programs article:nth-child(2) { margin-left: 12%; }
-.relief-programs article:nth-child(3) { margin-left: 23%; }
-.relief-programs article p:last-child { margin-top: .65rem; }
-.relief-meta {
-  color: var(--relief-muted);
-  font-size: .8rem;
-  line-height: 1.45;
-  margin: 0 0 .45rem;
-}
-.relief-life figure {
-  aspect-ratio: .86;
-}
-.relief-life figure img { object-position: 60% center; }
-.relief-life > div { margin: 1.6rem 0 0 12%; }
-.relief-life > div p { margin-top: .6rem; }
-
-.relief-news {
-  display: grid;
-  grid-template-columns: 1fr .96fr;
-  gap: clamp(2rem, 9vw, 9rem);
-  align-items: stretch;
-  padding-block: clamp(4rem, 11vw, 10rem);
-}
-
-.relief-news-reading-list {
-  display: grid;
-  gap: clamp(1.7rem, 4vw, 3.85rem);
-  padding: clamp(2rem, 6vw, 5.75rem) 0 0 clamp(0rem, 3.2vw, 4rem);
-}
-.relief-news-reading-list h3 { max-width: 18ch; }
-.relief-news-reading-list article > p:last-child { margin-top: .6rem; }
-.relief-news-figure {
-  position: relative;
-  aspect-ratio: 1.14;
-  align-self: center;
-  border-radius: 29% 3% 14% 6% / 37% 4% 22% 8%;
-}
-
-.relief-events {
-  position: relative;
-  isolation: isolate;
-  padding-block: clamp(4rem, 13vw, 12rem);
-}
-.relief-events h2 { text-align: center; }
-.relief-events ol {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1.4rem, 5.2vw, 6rem);
-  margin-top: clamp(1.9rem, 5vw, 4.6rem);
-  list-style: none;
-  padding: 0;
-}
-
-.relief-events li { position: relative; }
-.relief-events li:nth-child(2) { margin-top: clamp(1rem, 7vw, 6rem); }
-.relief-events li:nth-child(3) { margin-top: clamp(2rem, 14vw, 12rem); }
-
-.relief-events time {
-  display: grid;
-  justify-items: start;
-  align-content: center;
-  width: min(100%, 16rem);
-  aspect-ratio: 1.4;
-  margin-bottom: clamp(.9rem, 3vw, 2.3rem);
-  border-block-start: 1px solid var(--relief-rule);
-}
-
-.relief-events time span:first-child {
-  font: 600 clamp(2.4rem, 7vw, 6.3rem)/.9 var(--display-font);
-  letter-spacing: -.04em;
+.relief .relief-intro > h2 {
+  grid-area: title;
+  margin-inline-start: clamp(0rem, 6vw, 6rem);
+  padding-block-end: .05em;
+  font: italic 600 var(--relief-section-title-size)/.97 var(--serif-font);
+  letter-spacing: -.056em;
   color: var(--accent);
 }
-.relief-events time span:last-child { margin-top: .63rem; }
-.relief-events article > :nth-child(2) { margin: .65rem 0 .6rem; }
 
-.relief-workshop {
+.relief-route-preview {
+  --route-angle: -7deg;
+  --route-visible-height: 361;
+  grid-area: map;
+  position: relative;
+  inline-size: min(77%, 20rem);
+  aspect-ratio: 290 / var(--route-visible-height);
+  margin-block-start: clamp(-.65rem, -1vw, -.3rem);
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 7% 25% 7% 7% / 6% 24% 6% 6%;
+  box-shadow: 0 0 0 .32rem #6c8ca7, 0 1.15rem 2.75rem #070e1880;
+  transform: rotate(var(--route-angle));
+}
+
+.relief-route-preview img {
+  /* The map surface in the original 321 × 375 screenshot starts at (6, 2). */
+  position: absolute;
+  inset: calc(-200% / var(--route-visible-height)) auto auto calc(-600% / 290);
+  inline-size: calc(32100% / 290);
+  max-inline-size: none;
+  block-size: auto;
+}
+
+.relief-route-trace {
+  position: absolute;
+  z-index: -1;
+  inset: 64% auto auto 27%;
+  inline-size: 24%;
+  block-size: clamp(2.75rem, 5.5vw, 5.5rem);
+  pointer-events: none;
+}
+
+.relief-route-trace::before,
+.relief-route-trace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.relief-route-trace::before {
+  background: #42698a;
+  clip-path: polygon(0 calc(100% - 10px), 53% calc(100% - 10px), 74% 0,
+    100% 0, 100% 10px, 76% 10px, 55% 100%, 0 100%);
+}
+
+.relief-route-trace::after {
+  background: repeating-linear-gradient(90deg, #a0d3f4 0 6px, transparent 6px 12px);
+  clip-path: polygon(0 calc(100% - 6px), 54% calc(100% - 6px), 75% 4px,
+    100% 4px, 100% 6px, 75% 6px, 54% calc(100% - 4px), 0 calc(100% - 4px));
+}
+
+.relief-intro-copy {
+  grid-area: copy;
+  padding-block: clamp(1.5rem, 5vw, 4.5rem);
+}
+
+.relief .relief-intro-copy p {
+  max-inline-size: 37ch;
+  font-size: clamp(1rem, 1.5vw, 1.28rem);
+  color: var(--relief-muted);
+}
+
+.relief-intro-copy strong {
+  display: block;
+  max-inline-size: 20ch;
+  margin-block-end: .45em;
+  font: 600 clamp(1.85rem, 2.65vw, 2.75rem)/1.05 var(--serif-font);
+  text-wrap: balance;
+  color: var(--ink);
+}
+
+.relief-story {
+  background: #111925;
+}
+
+.relief-story-pin {
   display: grid;
-  grid-template-columns: 1.12fr .88fr;
-  gap: clamp(2rem, 8vw, 8rem);
-  align-items: center;
-  padding-top: clamp(2rem, 7vw, 6.5rem);
-  padding-bottom: clamp(5rem, 12vw, 11rem);
+  gap: clamp(4.25rem, 10vw, 8rem);
+  padding-block: clamp(5rem, 11vw, 10rem);
 }
-.relief-workshop figure {
-  aspect-ratio: 1.48;
-}
-.relief-workshop h2 {
-  font-size: clamp(2.2rem, 5.3vw, 5.75rem);
-  line-height: .97;
+
+.relief-story-panel {
+  min-inline-size: 0;
+  margin-inline-start: clamp(0rem, 4vw - 3rem, 4rem);
   overflow-wrap: anywhere;
 }
-.relief-workshop h2 + p { margin-block: 1.2rem 1rem; }
 
-.relief-footer { position: relative; overflow: clip; }
-.relief-footer-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  border-block-start: 1px solid var(--relief-rule);
-  padding-block-start: 1rem;
-  position: relative;
-  z-index: 1;
-  font-size: clamp(.76rem, 1vw, .9rem);
+.relief .relief-story :is(h2, h3) {
+  font: italic 600 var(--relief-section-title-size)/1.02 var(--serif-font);
+  letter-spacing: -.04em;
 }
-.relief-footer-info a { min-width: max-content; }
-.relief-footer-mark {
-  display: block;
-  position: relative;
-  width: fit-content;
-  margin: .03em auto -.14em;
-  font: 600 clamp(3rem, 21vw, 22rem)/1 var(--display-font);
-  letter-spacing: -.045em;
-  white-space: nowrap;
-  text-decoration: none;
+
+.relief-story-title > span { display: block; }
+.relief-story-title > span + span {
+  margin-block-start: .1em;
   color: var(--accent);
-  transition: color .3s ease;
 }
-.relief-footer-mark:hover { color: var(--ink); }
-.relief-footer-mark:focus-visible { outline-offset: -3px; }
+
+.relief .relief-story h3 {
+  max-inline-size: 29ch;
+  font-size: clamp(2.15rem, 4.1vw, 4.5rem);
+  text-wrap: balance;
+}
+
+.relief-story-copy p {
+  margin-block-start: clamp(1.15rem, 2.55vw, 2.2rem);
+  font-size: clamp(1.0625rem, 1.45vw, 1.3rem);
+}
+
+.relief .relief-story-finale h3 { max-inline-size: 33ch; }
+
+.relief-story-finale h3 span {
+  display: block;
+}
+
+.relief-story-finale h3 span + span {
+  margin-block-start: .16em;
+  color: var(--accent);
+}
+
+@media (min-width: 900px) {
+  .relief-story-panel { margin-inline-start: 0; }
+
+  .relief-story-title,
+  .relief-story-copy,
+  .relief .relief-story-finale h3 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .94fr);
+    column-gap: clamp(2.5rem, 7vw, 8rem);
+  }
+
+  .relief-story-title > span + span {
+    grid-area: 2 / 2;
+    margin-block-start: .35em;
+  }
+
+  .relief-story-copy { align-items: center; }
+
+  .relief-story-copy p {
+    max-inline-size: 33ch;
+    margin: 0;
+    font-size: clamp(1.25rem, 1.8vw, 1.75rem);
+  }
+
+  .relief .relief-story-finale h3 {
+    align-items: start;
+    max-inline-size: none;
+  }
+
+  .relief-story-finale h3 span + span {
+    margin-block-start: clamp(2.5rem, 6vw, 6rem);
+  }
+}
 
 @media (prefers-reduced-motion: no-preference) {
+  .relief-story[data-story-mode="sticky"] {
+    min-block-size: 410.5vh;
+    min-block-size: 410.5svh;
+  }
+
+  [data-story-mode="sticky"] .relief-story-pin {
+    position: sticky;
+    inset-block-start: 0;
+    block-size: 100vh;
+    block-size: 100svh;
+    align-items: center;
+    gap: 0;
+    padding-block: 0;
+  }
+
+  [data-story-mode="sticky"] .relief-story-panel { grid-area: 1 / 1; }
+  [data-story-mode="sticky"] [data-story-cue] {
+    opacity: var(--story-reveal, 0);
+    transform: translateY(calc((1 - var(--story-reveal, 0)) * 1.1rem));
+  }
+
+  [data-story-mode="flow"] :is(.relief-story-copy, .relief-story-finale, .relief-story-title > span) {
+    transition: opacity .5s ease, transform .5s cubic-bezier(.2, .75, .25, 1);
+  }
+
+  [data-story-mode="flow"] :is(.relief-story-copy, .relief-story-finale):not(.is-visible),
+  [data-story-mode="flow"] .relief-story-title:not(.is-visible) > span {
+    opacity: 0;
+    transform: translateY(.75rem);
+  }
+
+  [data-story-mode="flow"] .relief-story-title > span + span { transition-delay: .13s; }
+
   .relief-title > span > span {
     animation: relief-title-lift .86s cubic-bezier(.16, 1, .3, 1) both;
   }
@@ -429,6 +514,17 @@ body.relief {
   }
 
   @supports (animation-timeline: view()) {
+    .relief-intro { view-timeline-name: --relief-route; }
+    .relief-route-preview {
+      animation: relief-route-arrive linear both;
+      animation-timeline: --relief-route;
+      animation-range: entry 30% cover 44%;
+    }
+    .relief-route-trace {
+      animation: relief-route-trace linear both;
+      animation-timeline: --relief-route;
+      animation-range: entry 45% cover 48%;
+    }
     .relief .education-universe { view-timeline-name: --relief-universe; }
     .relief .education-universe::after {
       animation: relief-orbit linear both;
@@ -450,24 +546,8 @@ body.relief {
       animation-timeline: view();
       animation-range: exit 0% exit 92%;
     }
-    .relief-portal, .relief-life figure, .relief-news-figure, .relief-workshop figure {
-      animation: relief-media-reveal linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 36%;
-    }
-    .relief-news-figure, .relief-workshop figure { --reveal-from-end: 26%; --reveal-from-start: 0%; }
-    .relief-intro-copy, .relief-education h2, .relief-news h2, .relief-events h2, .relief-workshop h2 {
+    .relief-intro > h2, .relief-intro-copy {
       animation: relief-heading-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-    }
-    .relief-events time {
-      animation: relief-step linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 47%;
-    }
-    .relief-footer-mark {
-      animation: relief-emboss linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
@@ -480,9 +560,9 @@ body.relief {
     }
   }
   @keyframes relief-orbit {
-    0% { transform: translateY(-28%) scale(1.13); opacity: .12; }
+    0% { transform: translateY(-28%) scaleY(1.13); opacity: .12; }
     54% { opacity: 1; }
-    100% { transform: translateY(6%) scale(1); opacity: .6; }
+    100% { transform: translateY(6%) scaleY(1); opacity: .6; }
   }
   @keyframes relief-map-approach {
     from { transform: translateY(5%) scale(.87); }
@@ -490,21 +570,15 @@ body.relief {
   @keyframes relief-map-title {
     from { opacity: .18; transform: translateY(.62em); }
   }
-  @keyframes relief-media-reveal {
-    from {
-      clip-path: inset(12% var(--reveal-from-end, 0%) 21% var(--reveal-from-start, 26%) round 22% 8%);
-      transform: translateY(6%);
-    }
-    to { clip-path: inset(0); }
-  }
   @keyframes relief-heading-rise {
     from { opacity: .58; transform: translateY(.34em); }
   }
-  @keyframes relief-step {
-    from { transform: translateY(1rem); }
+  @keyframes relief-route-arrive {
+    from { opacity: .28; transform: translateY(2.5rem) rotate(calc(var(--route-angle) - 8deg)); }
   }
-  @keyframes relief-emboss {
-    from { transform: translateY(28%); }
+  @keyframes relief-route-trace {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0); }
   }
 }
 
@@ -551,41 +625,26 @@ body.relief {
     justify-self: center;
   }
   .relief-intro {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "copy" "map";
+    row-gap: clamp(1.35rem, 4vw, 3rem);
     padding-top: clamp(5rem, 14vw, 7rem);
-    padding-bottom: clamp(2.5rem, 8vw, 4.7rem);
+    padding-bottom: clamp(4rem, 12vw, 6rem);
   }
-  .relief-intro-copy h2 { font-size: clamp(2.75rem, 9vw, 4.8rem); }
-  .relief-intro-copy p { margin-left: 0; }
+  .relief .relief-intro > h2 {
+    margin-inline-start: 0;
+  }
+  .relief-intro-copy { padding-block: 0; }
+  .relief-route-preview {
+    --route-angle: -3deg;
+    inline-size: min(85%, 20rem);
+    margin-block-start: .65rem;
+  }
+  .relief-route-trace { display: none; }
 }
 
 @media (max-width: 590px) {
   .relief-title { font-size: clamp(1.9rem, 9.7vw, 3.57rem); }
   .relief-film { aspect-ratio: 1.55; }
   .relief h2 { line-height: 1; }
-  .relief-intro, .relief-education-layout, .relief-news, .relief-workshop { grid-template-columns: 1fr; }
-  .relief-intro-copy { grid-row: 1; }
-  .relief-intro-copy h2 { max-width: 12ch; }
-  .relief-portal { width: 81%; margin: 0 0 0 auto; }
-  .relief-education, .relief-news, .relief-events { padding-block: 3.35rem; }
-  .relief-programs article:nth-child(2) { margin-left: 6%; }
-  .relief-programs article:nth-child(3) { margin-left: 12%; }
-  .relief-life { margin-top: 1rem; }
-  .relief-life figure { width: 85%; }
-  .relief-life > div { margin-left: 0; }
-  .relief-news-figure { width: 84%; margin-left: auto; }
-  .relief-events h2 { text-align: left; }
-  .relief-events ol { grid-template-columns: 1fr; gap: 1.55rem; }
-  .relief-events li:nth-child(n) { margin: 0; }
-  .relief-events li {
-    display: grid;
-    grid-template-columns: clamp(4.7rem, 23vw, 6.7rem) 1fr;
-    align-items: start;
-    gap: 1rem;
-  }
-  .relief-events time { aspect-ratio: 1.07; margin-top: .18rem; }
-  .relief-events time span:first-child { font-size: clamp(2.35rem, 9vw, 3.1rem); }
-  .relief-events time span:last-child { font-size: .74rem; margin-top: .34rem; }
-  .relief-events h3 { font-size: 1.42rem; }
-  .relief-workshop figure { width: 96%; }
-  .relief-workshop h2 { max-width: 12ch; }
 }

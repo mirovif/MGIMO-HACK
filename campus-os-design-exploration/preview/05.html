@@ -5,10 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#303B48">
   <title>UTRET</title>
+  <script>
+    function keepCoverAsEntry() {
+      if (location.hash === '#campus') {
+        history.replaceState(history.state, '', '#top');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      if (!location.hash || location.hash === '#top') {
+        history.scrollRestoration = 'manual';
+      }
+    }
+
+    keepCoverAsEntry();
+    window.addEventListener('hashchange', keepCoverAsEntry);
+  </script>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="../fonts.css">
   <link rel="stylesheet" href="./shared.css">
   <link rel="stylesheet" href="./05.css">
+  <link rel="stylesheet" href="./05-kameta.css">
+  <link rel="stylesheet" href="./05-team.css">
   <link rel="stylesheet" href="../education-universe/booklet.css">
   <link rel="stylesheet" href="../education-universe/universe.css">
   <script type="module" src="./05.mjs"></script>

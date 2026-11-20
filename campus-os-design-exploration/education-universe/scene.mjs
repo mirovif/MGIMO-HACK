@@ -459,6 +459,44 @@ function createPoints(count, size, positions = new Float32Array(count * 3)) {
   return { object: new THREE.Points(geometry, material), geometry, material, positions, opacity, colors, radii, size };
 }
 
+function makeSubjectStars(count) {
+  const rim = [
+    [0, .5, 0], [.115, .12, 0], [.43, 0, 0], [.115, -.12, 0],
+    [0, -.5, 0], [-.115, -.12, 0], [-.43, 0, 0], [-.115, .12, 0],
+  ];
+  const blue = new THREE.Color(0x8ac6ff);
+  const violet = new THREE.Color(0x9872fa);
+  const center = new THREE.Color(0xf1eaff);
+  const rimColors = rim.map(([x, y]) => violet.clone().lerp(blue, .5 + (y - x) * .9));
+  const frontShades = [1, .83, .66, .84, .72, .86, 1, .91];
+  const back = new THREE.Color(0x51488e).toArray();
+  const positions = [];
+  const colors = [];
+  rim.forEach((edge, index) => {
+    const next = (index + 1) % rim.length;
+    const shade = frontShades[index];
+    positions.push(0, 0, .19, ...rim[next], ...edge, 0, 0, -.12, ...edge, ...rim[next]);
+    for (const color of [center, rimColors[next], rimColors[index]]) {
+      colors.push(color.r * shade, color.g * shade, color.b * shade);
+    }
+    colors.push(...back, ...back, ...back);
+  });
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  const material = new THREE.MeshBasicMaterial({
+    vertexColors: true, toneMapped: false, transparent: true, depthWrite: false,
+  });
+  const stars = new THREE.InstancedMesh(geometry, material, count);
+  stars.name = 'Discipline stars';
+  stars.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  stars.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3).setUsage(THREE.DynamicDrawUsage);
+  stars.count = 0;
+  stars.frustumCulled = false;
+  return stars;
+}
+
 function createLines(count) {
   const positions = new Float32Array(count * 6);
   const strength = new Float32Array(count * 2);
@@ -776,15 +814,15 @@ export async function createUniverseScene(canvas, graph, handlers) {
   });
 
   const maxSubjects = Math.max(1, ...Array.from(graph.byId.values(), (node) => node.type === 'program' ? graph.children(node.id).length : 0));
-  const subjectsPoints = createPoints(maxSubjects, 3.9);
+  const subjectStars = makeSubjectStars(maxSubjects);
+  const subjectTransform = new THREE.Object3D();
+  const litStar = new THREE.Color(1, 1, 1);
+  const quietStar = new THREE.Color(.48, .48, .48);
   const subjectsLines = createLines(maxSubjects);
-  subjectsPoints.object.frustumCulled = false;
-  world.add(subjectsPoints.object, subjectsLines.object);
-  pointBatches.push(subjectsPoints);
+  world.add(subjectStars, subjectsLines.object);
   const graphControls = {
     field: [], program: null, target: null, alpha: 0, steps: 0, settle: 0,
   };
-  subjectsPoints.geometry.setDrawRange(0, 0);
   subjectsLines.geometry.setDrawRange(0, 0);
 
   let selection = graph.root;
@@ -818,6 +856,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
   const touch = new Map();
   let pinch = null;
   let gesture = null;
+  let touchSelection = null;
   let pointer = null;
 
   function subjectWorld(id, result) {
@@ -1030,16 +1069,14 @@ export async function createUniverseScene(canvas, graph, handlers) {
       state.steps = 0;
       state.settle = 0;
       state.alpha = reduced.matches && state.program ? 1 : 0;
-      subjectsPoints.geometry.setDrawRange(0, state.field.length);
+      subjectStars.count = state.field.length;
       subjectsLines.geometry.setDrawRange(0, state.field.length * 2);
       state.field.forEach((subject, i) => {
         const tint = graph.sharedPrograms(subject.node.id).length > 1
           ? state.program.accent.clone().lerp(new THREE.Color(0xdab9bf), .57) : state.program.accent;
-        tint.toArray(subjectsPoints.colors, i * 3);
         tint.toArray(subjectsLines.colors, i * 6);
         tint.toArray(subjectsLines.colors, i * 6 + 3);
       });
-      subjectsPoints.geometry.attributes.tint.needsUpdate = true;
       subjectsLines.geometry.attributes.tint.needsUpdate = true;
     }
     if (!state.field.length) return;
@@ -1052,6 +1089,10 @@ export async function createUniverseScene(canvas, graph, handlers) {
       }
     }
     const origin = state.program.origin;
+    const size = mobile ? .28 : .2;
+    subjectTransform.quaternion.copy(camera.quaternion);
+    subjectTransform.rotateY(.31);
+    subjectTransform.rotateZ(.11);
     for (const [i, item] of state.field.entries()) {
       const local = reduced.matches ? item.anchor : item.point;
       const collapse = wantsNewField ? .18 + .82 * state.alpha : 1;
@@ -1060,21 +1101,22 @@ export async function createUniverseScene(canvas, graph, handlers) {
         origin.y + local[1] * collapse,
         origin.z + local[2] * collapse,
       );
-      position.toArray(subjectsPoints.positions, i * 3);
       origin.toArray(subjectsLines.positions, i * 6);
       position.toArray(subjectsLines.positions, i * 6 + 3);
       const emphasized = item.node.id === selection.id || item.node.id === highlight;
       const quiet = selection.type === 'subject' && !emphasized;
-      subjectsPoints.opacity[i] = quiet ? .64 : 1;
-      subjectsPoints.radii[i] = emphasized ? 1.8 : i % 4 === 0 ? 1.1 : .82;
+      subjectTransform.position.copy(position);
+      subjectTransform.scale.setScalar(size * (emphasized ? 1.38 : 1));
+      subjectTransform.updateMatrix();
+      subjectStars.setMatrixAt(i, subjectTransform.matrix);
+      subjectStars.setColorAt(i, quiet ? quietStar : litStar);
       subjectsLines.strength[i * 2] = emphasized ? .18 : .068;
       subjectsLines.strength[i * 2 + 1] = emphasized ? .66 : .33;
     }
-    subjectsPoints.material.uniforms.intensity.value = state.alpha;
+    subjectStars.material.opacity = state.alpha;
     subjectsLines.material.uniforms.opacity.value = state.alpha;
-    subjectsPoints.geometry.attributes.position.needsUpdate = true;
-    subjectsPoints.geometry.attributes.glow.needsUpdate = true;
-    subjectsPoints.geometry.attributes.radius.needsUpdate = true;
+    subjectStars.instanceMatrix.needsUpdate = true;
+    subjectStars.instanceColor.needsUpdate = true;
     subjectsLines.geometry.attributes.position.needsUpdate = true;
     subjectsLines.geometry.attributes.strength.needsUpdate = true;
   }
@@ -1148,7 +1190,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
         consider(child.id, (mobile ? 26 : 44) + touchRadius);
       }
       if (selection.type === 'program' || selection.type === 'subject') {
-        for (const subject of graphControls.field) consider(subject.node.id, 12 + touchRadius);
+        for (const subject of graphControls.field) consider(subject.node.id, 24 + touchRadius);
       }
     }
     return found;
@@ -1207,6 +1249,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
 
   function pointerDown(event) {
     if (event.button !== 0) return;
+    touchSelection = null;
     const position = local(event);
     if (event.pointerType === 'touch') {
       touch.set(event.pointerId, position);
@@ -1259,9 +1302,17 @@ export async function createUniverseScene(canvas, graph, handlers) {
     gesture = null;
     if (click) {
       const id = hitTest(local(event), event.pointerType);
-      if (id) handlers.select?.(id);
+      // On touch, wait for click so a newly shown card cannot receive the same tap.
+      if (event.pointerType === 'touch') touchSelection = id;
+      else if (id) handlers.select?.(id);
     }
     queue();
+  }
+
+  function finishTouchSelection() {
+    const id = touchSelection;
+    touchSelection = null;
+    if (id) handlers.select?.(id);
   }
 
   function clearPointer() {
@@ -1278,6 +1329,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
   canvas.addEventListener('pointermove', pointerMove, { signal });
   canvas.addEventListener('pointerup', endPointer, { signal });
   canvas.addEventListener('pointercancel', endPointer, { signal });
+  canvas.addEventListener('click', finishTouchSelection, { signal });
   canvas.addEventListener('pointerleave', clearPointer, { signal });
   canvas.addEventListener('wheel', wheelZoom, { signal, passive: false });
   document.addEventListener('visibilitychange', queue, { signal });
@@ -1321,6 +1373,7 @@ export async function createUniverseScene(canvas, graph, handlers) {
       observer.disconnect();
       gyroscopeMixer.stopAllAction();
       gyroscopeMixer.uncacheRoot(gyroscope.scene);
+      subjectStars.dispose();
       const geometries = new Set();
       const materials = new Set();
       world.traverse((object) => {
