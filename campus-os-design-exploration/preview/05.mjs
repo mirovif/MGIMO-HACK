@@ -48,8 +48,8 @@ document.body.innerHTML = `
         <a class="relief-action" href="${campusMapUrl}" target="_blank" rel="noopener noreferrer">Открыть карту РЭУ</a>
       </div>
       <figure class="relief-route-preview">
-        <figcaption>Пример маршрута</figcaption>
-        <ol><li>Корпус № 1</li><li>Корпус № 9</li></ol>
+        <img src="../assets/navigation-route.webp" width="321" height="375" loading="lazy" decoding="async"
+          alt="Маршрут между корпусами кампуса. В пути 4 минуты, расстояние 239 метров.">
       </figure>
       <span class="relief-route-trace" aria-hidden="true"></span>
     </section>
