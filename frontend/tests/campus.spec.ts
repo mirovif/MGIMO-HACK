@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { confirmationPhoto } from './fixtures'
 
 const mobile = { viewport: { width: 360, height: 800 }, isMobile: true, hasTouch: true }
 const password = process.env.CAMPUS_TEST_PASSWORD || 'Campus-demo-26'
@@ -135,6 +136,8 @@ test('one full-name field updates the profile, ticket, greeting and certificate 
     await navigate(page, 'Решить ситуацию')
     await page.getByRole('button', { name: /Мне нужна справка/ }).click()
     await page.getByLabel('Какой документ вам нужен?').selectOption('study')
+    await expect(page.getByRole('button', { name: 'Далее', exact: true })).toBeDisabled()
+    await page.getByLabel('Фото подтверждающего документа').setInputFiles(confirmationPhoto)
     await advance(page)
     await expect(page.getByRole('heading', { name: 'Проверка данных', exact: true })).toBeVisible()
     await expect(page.locator('.wizard').getByText('Светлов Михаил Алексеевич', { exact: true })).toBeVisible()
@@ -235,12 +238,19 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
     await navigate(student, 'Решить ситуацию')
     await student.getByRole('button', { name: /Мне нужна справка/ }).click()
     await student.getByLabel('Какой документ вам нужен?').selectOption('study')
+    const photo = student.getByLabel('Фото подтверждающего документа')
+    await photo.setInputFiles(confirmationPhoto)
     await advance(student)
     await expect(student.locator('.wizard').getByText('Орлова Анна Сергеевна', { exact: true })).toBeVisible()
     await student.getByRole('button', { name: 'Назад' }).click()
     await expect(student.getByLabel('Какой документ вам нужен?')).toHaveValue('study')
     await advance(student)
     await student.reload()
+    await expect(student.getByLabel('Какой документ вам нужен?')).toHaveValue('study')
+    await expect(student.getByRole('button', { name: 'Далее', exact: true })).toBeDisabled()
+    await expect(student.locator('.wizard').getByRole('alert')).toContainText('Прикрепите фото заново')
+    await photo.setInputFiles(confirmationPhoto)
+    await advance(student)
     await expect(student.getByRole('heading', { name: 'Проверка данных', exact: true })).toBeVisible()
     await withoutOverflow(student)
     await student.getByRole('button', { name: 'Отправить обращение' }).click()
@@ -248,6 +258,7 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
     const number = (await student.getByRole('heading', { level: 2 }).textContent())!
     await student.getByRole('link', { name: 'Открыть обращение' }).click()
     await expect(student.getByRole('heading', { name: 'История' })).toBeVisible()
+    await expect(student.getByRole('link', { name: confirmationPhoto.name })).toHaveAttribute('href', /\/attachment$/)
     const path = new URL(student.url()).hash.slice(1)
 
     await login(stranger, 'student2', path.replace('app/', ''))
@@ -255,6 +266,7 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
 
     await login(staff, 'staff', 'requests')
     await staff.getByRole('link').filter({ hasText: number }).click()
+    await expect(staff.getByRole('link', { name: confirmationPhoto.name })).toBeVisible()
     await staff.getByLabel('Действие').selectOption('review')
     await staff.getByRole('button', { name: 'Сохранить' }).click()
     await expect(staff.getByRole('status')).toContainText('Изменения сохранены')

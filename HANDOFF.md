@@ -7,8 +7,7 @@
 Довести UTRET до полной конкурсной готовности по заданию «Цифровой деканат будущего». Цель команды — претендовать на 40/40. Итог выставляют эксперты. UTRET — неофициальный демонстрационный кабинет студента РЭУ им. Г. В. Плеханова.
 
 - [Исходники и этот HANDOFF, ветка master](https://github.com/mirovif/MGIMO-HACK/tree/master)
-- [Публичный сайт](https://utret-campus.vercel.app/) · [Кабинет](https://utret-campus.vercel.app/lks) · [Рейтинг](https://utret-campus.vercel.app/lks#app/rating)
-- [Запасной адрес того же проекта](https://utret-campus-demo.vercel.app/) · [Vercel](https://vercel.com/reu-ds-club/utret-campus/deployments)
+- [Публичный сайт](https://utret-ivan45646.mia0.amvera.tech/) · [Кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [Рейтинг](https://utret-ivan45646.mia0.amvera.tech/lks#app/rating)
 - Последняя проверенная публикация приложения — коммит [7ba8c51](https://github.com/mirovif/MGIMO-HACK/commit/7ba8c51a8624190eadfccf18c7ab5da0df6983f6), деплой `dpl_72c8aV2q4gRmRZPVH3XMeP8iuN1n`. Более поздний коммит с этой сводкой меняет документацию.
 
 ## Что уже работает
