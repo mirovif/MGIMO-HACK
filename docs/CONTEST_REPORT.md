@@ -2,7 +2,7 @@
 
 Отчёт о создании конкурсного прототипа · 21 ноября 2026 года
 
-[Открыть UTRET](https://utret-campus.vercel.app/) · [Перейти в личный кабинет](https://utret-campus.vercel.app/lks) · [Исходный код](https://github.com/mirovif/MGIMO-HACK/tree/master)
+[Открыть UTRET](https://utret-ivan45646.mia0.amvera.tech/) · [Перейти в личный кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [Исходный код](https://github.com/mirovif/MGIMO-HACK/tree/master)
 
 ## Какую задачу решает UTRET
 
