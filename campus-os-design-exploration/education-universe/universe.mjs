@@ -49,7 +49,7 @@ function panelContent(graph, path, contextual) {
     : `<div class="eu-related"><h4>${relatedLabel}</h4>${relatedList}</div>`;
   return `
     <header class="eu-panel-head">
-      <p class="eu-kind">${overview ? 'Каталог · РЭУ им. Г. В. Плеханова' : labels[node.type]}</p>
+      <p class="eu-kind">${overview ? 'РЭУ им. Г. В. Плеханова' : labels[node.type]}</p>
       <h3 id="eu-selection-title" tabindex="-1">${escape(node.label)}</h3>
       ${node.code && node.type === 'direction' ? `<p class="eu-note eu-code">${escape(node.code)}</p>` : ''}
       ${parent && ['direction', 'program'].includes(node.type) ? `<p class="eu-note">${escape(parent.label)}</p>` : ''}
@@ -146,7 +146,7 @@ export function mountEducationUniverse(section) {
     const timeout = setTimeout(() => request.abort(), 12000);
     const restoreFocus = document.activeElement === retry;
     retry.hidden = true;
-    setStatus('Загружаем каталог…');
+    setStatus('Загружаем данные…');
     try {
       graph = await loadGraph(undefined, { signal: request.signal });
       if (disposed) return;
@@ -163,7 +163,7 @@ export function mountEducationUniverse(section) {
       if (disposed) return;
       graph = undefined;
       section.dataset.universeMode = 'error';
-      setStatus('Не удалось загрузить каталог.');
+      setStatus('Не удалось загрузить образовательную вселенную.');
       retry.hidden = false;
       if (restoreFocus) retry.focus({ preventScroll: true });
       if (!request.signal.aborted) console.error('Education Universe:', error);
