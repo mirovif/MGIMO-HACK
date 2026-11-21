@@ -10,7 +10,7 @@ import { teamMarkup, mountTeam } from './05-team.mjs';
 const siteName = 'UTRET';
 const utretNavigation = navigation
   .filter(([id]) => id === 'university' || id === 'education')
-  .map(([id, label]) => [id === 'education' ? 'education-universe' : id, label]);
+  .map(([id, label]) => id === 'education' ? ['education-universe', label] : [id, 'Карта РЭУ']);
 
 document.body.innerHTML = `
   <header class="relief-hero" id="top">
@@ -48,15 +48,16 @@ document.body.innerHTML = `
         <a class="relief-action" href="${campusMapUrl}" target="_blank" rel="noopener noreferrer">Открыть карту РЭУ</a>
       </div>
       <figure class="relief-route-preview">
-        <img src="../assets/navigation-route.webp" width="321" height="375" loading="lazy" decoding="async"
-          alt="Маршрут между корпусами кампуса. В пути 4 минуты, расстояние 239 метров.">
+        <figcaption>Пример маршрута</figcaption>
+        <ol><li>Корпус № 1</li><li>Корпус № 9</li></ol>
       </figure>
       <span class="relief-route-trace" aria-hidden="true"></span>
     </section>
 
     ${kametaMarkup}
     ${teamMarkup}
-  </main>`;
+  </main>
+  <footer class="relief-wrap relief-footer">UTRET — неофициальный конкурсный прототип.</footer>`;
 
 mountBooklet(document.querySelector('#student-id'));
 mountStory(document.querySelector('#campus'));

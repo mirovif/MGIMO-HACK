@@ -19,21 +19,34 @@ type Draft = {
   subject: string; certificate: keyof typeof certificates | ''; category: keyof typeof caseCategories | ''; comment: string
   attachmentName?: string
 }
+type Drafts = Partial<Record<Scenario, Draft>>
+type DraftState = { active: Scenario | null; drafts: Drafts }
 
-function makeDraft(scenario: Scenario): Draft {
+function makeDraft(scenario: Scenario, subject = ''): Draft {
   return { scenario, step: 0, key: crypto.randomUUID(), start: moscowToday(), end: moscowToday(),
-    missed: [], subject: '', certificate: '', category: '', comment: '' }
+    missed: [], subject, certificate: '', category: '', comment: '' }
 }
 
-function loadDraft(storageKey: string): Draft | null {
+function readDraft(value: Draft | undefined): Draft | null {
+  if (!value || !Object.hasOwn(scenarios, value.scenario) || typeof value.key !== 'string') return null
+  if (value.scenario === 'certificate' && value.step === 2) return { ...value, step: 1 }
+  return value
+}
+
+function loadDraftState(storageKey: string): DraftState {
   try {
     const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null')
-    if (value && Object.hasOwn(scenarios, value.scenario) && typeof value.key === 'string') {
-      if (value.scenario === 'certificate' && value.step === 2) return { ...value, step: 1 }
-      return value
+    const legacy = readDraft(value)
+    if (legacy) return { active: legacy.scenario, drafts: { [legacy.scenario]: legacy } }
+    const drafts: Drafts = {}
+    for (const scenario of Object.keys(scenarios) as Scenario[]) {
+      const saved = readDraft(value?.drafts?.[scenario])
+      if (saved?.scenario === scenario) drafts[scenario] = saved
     }
+    const active: Scenario | null = value?.active
+    return { active: active && Object.hasOwn(drafts, active) ? active : null, drafts }
   } catch {}
-  return null
+  return { active: null, drafts: {} }
 }
 
 function DatePeriod({ start, end }: { start?: string; end?: string }) {
@@ -41,9 +54,17 @@ function DatePeriod({ start, end }: { start?: string; end?: string }) {
   return <>{formatDate(start)}{start !== end && <> — {formatDate(end)}</>}</>
 }
 
-export function Wizard({ user }: { user: Profile }) {
+export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?: string }) {
   const storageKey = 'campus-draft-' + user.id
-  const [draft, setDraft] = useState(() => loadDraft(storageKey))
+  const [saved, setSaved] = useState<DraftState>(() => {
+    const state = loadDraftState(storageKey)
+    if (retakeSubject === undefined) return state
+    return {
+      active: 'retake',
+      drafts: { ...state.drafts, retake: state.drafts.retake ?? makeDraft('retake', retakeSubject) },
+    }
+  })
+  const draft = saved.active ? saved.drafts[saved.active] : undefined
   const [file, setFile] = useState<File>()
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
@@ -52,19 +73,27 @@ export function Wizard({ user }: { user: Profile }) {
   const submission = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const grades = useResource<Grade[]>(draft?.scenario === 'retake' ? '/grades' : null)
+  const selectedSubject = draft && grades.data?.some(item => item.subject === draft.subject) ? draft.subject : ''
   const missed = useResource<Lesson[]>(draft?.scenario === 'illness' && draft.step > 0
     ? '/schedule/missed?' + new URLSearchParams({ start: draft.start, end: draft.end }) : null)
   useEffect(() => {
-    try { if (draft) sessionStorage.setItem(storageKey, JSON.stringify(draft)); else sessionStorage.removeItem(storageKey) } catch {}
-  }, [draft, storageKey])
-  useEffect(() => { heading.current?.focus() }, [draft?.step, draft?.scenario])
+    try { sessionStorage.setItem(storageKey, JSON.stringify(saved)) } catch {}
+  }, [saved, storageKey])
+  useEffect(() => { heading.current?.focus() }, [choosing, draft?.step, draft?.scenario])
 
   function update(values: Partial<Draft>, changeContent = true) {
     setError('')
-    setDraft(current => current && { ...current, ...values, key: changeContent ? crypto.randomUUID() : current.key })
+    const key = changeContent ? crypto.randomUUID() : undefined
+    setSaved(current => {
+      const active = current.active
+      const draft = active ? current.drafts[active] : undefined
+      if (!active || !draft) return current
+      return { active, drafts: { ...current.drafts, [active]: { ...draft, ...values, key: key ?? draft.key } } }
+    })
   }
   function choose(scenario: Scenario) {
-    if (draft?.scenario !== scenario) { setDraft(makeDraft(scenario)); setFile(undefined) }
+    const next = saved.drafts[scenario] ?? makeDraft(scenario)
+    setSaved(current => ({ active: scenario, drafts: { ...current.drafts, [scenario]: next } }))
     setError(''); setChoosing(false)
   }
   if (created) return <Section title="Обращение отправлено">
@@ -78,7 +107,7 @@ export function Wizard({ user }: { user: Profile }) {
   if (!draft || choosing) return <Section title="Что случилось?" text="Выберите ситуацию. Подскажем, какие данные нужны деканату."
     action={<a className="button secondary" href="#app/requests">Мои обращения</a>}>
     <div className="scenario-grid">{Object.entries(scenarios).map(([key, item]) => <button type="button" className="scenario-card" key={key} onClick={() => choose(key as Scenario)}>
-      <span className="scenario-icon"><item.icon size={25} /></span><span><strong>{scenarioNames[key as Scenario]}</strong><small>{item.caption}</small></span>
+      <span className="scenario-icon"><item.icon size={25} /></span><span><strong>{scenarioNames[key as Scenario]}</strong><small>{saved.drafts[key as Scenario] ? 'Продолжить черновик' : item.caption}</small></span>
       <ChevronRight size={20} className="scenario-arrow" />
     </button>)}</div>
   </Section>
@@ -96,6 +125,9 @@ export function Wizard({ user }: { user: Profile }) {
       const days = (Date.parse(current.end) - Date.parse(current.start)) / 86_400_000
       if (!Number.isFinite(days) || days < 0 || days > 30) { setError('Укажите период от 1 до 31 дня и проверьте порядок дат.'); return }
     }
+    if (scenario === 'retake' && !selectedSubject) {
+      setError('Выберите дисциплину из зачётки.'); return
+    }
     if ((scenario === 'other' || scenario === 'retake') && step === 1 && current.comment.trim().length < 3) {
       setError('Добавьте описание из трёх или более символов.'); return
     }
@@ -107,11 +139,18 @@ export function Wizard({ user }: { user: Profile }) {
       : scenario === 'certificate' ? { certificate_type: current.certificate, comment: current.comment }
       : { category: current.category, comment: current.comment }
     const json = JSON.stringify({ scenario, details })
-    const multipart = file ? new FormData() : null
-    if (multipart && file) { multipart.set('payload', json); multipart.set('file', file) }
+    const attachment = scenario === 'illness' ? file : undefined
+    const multipart = attachment ? new FormData() : null
+    if (multipart && attachment) { multipart.set('payload', json); multipart.set('file', attachment) }
     try {
       const response = await api<CaseDetail>('/requests', { method: 'POST', headers: { 'Idempotency-Key': current.key }, body: multipart || json })
-      setDraft(null); setFile(undefined); setCreated(response)
+      setSaved(previous => {
+        const drafts = { ...previous.drafts }
+        delete drafts[scenario]
+        return { active: null, drafts }
+      })
+      if (scenario === 'illness') setFile(undefined)
+      setCreated(response)
     } catch (err) { setError(errorText(err)) }
     finally { submission.current = false; setSending(false) }
   }
@@ -155,10 +194,10 @@ export function Wizard({ user }: { user: Profile }) {
             if (control) control.value = ''
           }}>Убрать</button></div>}
         </>}
-        {scenario === 'retake' && step === 0 && <>
+        {scenario === 'retake' && <>
           {grades.loading && <Busy />}{grades.error && <Problem text={grades.error} retry={grades.reload} />}
           {grades.data?.length === 0 && <Empty title="Дисциплины пока не появились" />}
-          {!!grades.data?.length && <label>Выберите дисциплину<select required value={draft.subject} onChange={event => update({ subject: event.target.value })}>
+          {step === 0 && !!grades.data?.length && <label>Выберите дисциплину<select required value={selectedSubject} onChange={event => update({ subject: event.target.value })}>
             <option value="">Выбрать</option>{[...new Set(grades.data.map(item => item.subject))].map(subject => <option key={subject}>{subject}</option>)}
           </select></label>}
         </>}
@@ -184,7 +223,7 @@ export function Wizard({ user }: { user: Profile }) {
       </div>
       <div className="wizard-actions">
         <button type="button" className="button secondary" disabled={sending} onClick={() => step ? update({ step: step - 1 }, false) : setChoosing(true)}><ArrowLeft size={18} /> Назад</button>
-        <button className="button primary" disabled={sending || (scenario === 'retake' && step === 0 && !grades.data?.length) ||
+        <button className="button primary" disabled={sending || (scenario === 'retake' && !grades.data?.length) ||
           (scenario === 'illness' && ((step === 1 || step === last) && !missed.data || step >= 2 && !!draft.attachmentName && !file))}>
           {sending ? 'Отправляем…' : step === last ? 'Отправить обращение' : 'Далее'}{step === last ? <ClipboardCheck size={18} /> : <ArrowRight size={18} />}
         </button>

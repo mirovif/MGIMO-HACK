@@ -11,7 +11,6 @@ const files = [
   'assets/fonts',
   'assets/campus-fast.mp4',
   'assets/campus-still-fast.webp',
-  'assets/navigation-route.webp',
   'assets/universe-example.webp',
   'assets/kameta.webp',
   'assets/team-artemiy.webp',

@@ -83,16 +83,18 @@ export function SchedulePage() {
     {timetable.loading && <Busy text="Загружаем занятия…" />}
     {timetable.error && <Problem text={timetable.error} retry={timetable.reload} />}
     {timetable.data && <div className="panel stack">
-      <header className="panel-head"><div><p className="muted small">{source === 'demo' ? 'Демонстрационные данные · ' + timetable.data.group : 'Открытые данные РЭУ · ' + (selection?.name || '')}</p>
+      <header className="panel-head"><div><p className="muted small">{source === 'demo'
+        ? ['Демонстрационные данные', timetable.data.group].filter(Boolean).join(' · ')
+        : 'Открытые данные РЭУ · ' + (selection?.name || '')}</p>
         <h2>{formatDate(timetable.data.start, span === 'day' && source === 'demo')}{timetable.data.start !== timetable.data.end && ' — ' + formatDate(timetable.data.end)}</h2></div><CalendarDays size={22} />
       </header><LessonList lessons={timetable.data.lessons} dates={span === 'week' || source === 'rea'} />
     </div>}
   </Section>
 }
 
-export function GradesPage() {
+export function GradesPage({ showSession = false }: { showSession?: boolean }) {
   const resource = useResource<Grade[]>('/grades')
-  const [session, setSession] = useState(false)
+  const [session, setSession] = useState(showSession)
   const grades = resource.data?.filter(grade => session ? grade.exam_date !== null : true)
   return <Section title="Успеваемость" text="Демонстрационная зачётка и предстоящая сессия.">
     <div className="segmented" aria-label="Представление успеваемости"><button aria-pressed={!session} onClick={() => setSession(false)}>Зачётка</button>
@@ -100,9 +102,11 @@ export function GradesPage() {
     {resource.loading && <Busy />}
     {resource.error && <Problem text={resource.error} retry={resource.reload} />}
     {grades?.length === 0 && <Empty title={session ? 'Даты сессии пока не появились' : 'Оценок пока нет'} />}
-    {!!grades?.length && <div className="panel grades"><div className="grades-header"><strong>Дисциплина</strong><strong>Аттестация</strong><strong>Результат</strong></div>
+    {!!grades?.length && <div className="panel grades"><div className="grades-header"><strong>Дисциплина</strong><strong>Аттестация</strong><strong>{session ? 'Дата' : 'Результат'}</strong></div>
       {grades.map(grade => <div className="grade" key={grade.subject}><div><strong>{grade.subject}</strong><small className="mobile-grade-kind muted">{grade.kind}</small></div><span className="muted">{grade.kind}</span>
-        {grade.result ? <span className="badge status-resolved">{grade.result}</span> : <span className="badge status-review">{grade.exam_date ? formatDate(grade.exam_date) : 'Ожидается'}</span>}
+        {session && grade.exam_date ? <span className="badge status-review">{formatDate(grade.exam_date)}</span>
+          : grade.result ? <span className={'badge ' + (grade.result === 'Неудовлетворительно' || grade.result === 'Не зачтено' ? 'status-rejected' : 'status-resolved')}>{grade.result}</span>
+            : <span className="badge status-review">{grade.exam_date ? formatDate(grade.exam_date) : 'Ожидается'}</span>}
       </div>)}</div>}
   </Section>
 }

@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, or_, select, update
 
 from .auth import current_user, student_only
 from .db import events, favorites, grades, insert_once, notifications, now, ratings
@@ -87,6 +87,7 @@ def favorite(event_id: int, request: Request, user=Depends(student_only)):
 
 @router.get('/notifications')
 def read_notifications(request: Request, user=Depends(current_user)):
+    exams = {}
     with request.app.state.engine.begin() as conn:
         if user['role'] == 'student':
             first = today()
@@ -97,9 +98,30 @@ def read_notifications(request: Request, user=Depends(current_user)):
                         message=f'{lesson["date"]} · {lesson["subject"]}. {lesson["change"]}',
                         created_at=now(), event_key=f'demo-change-{lesson["id"]}',
                     ), ['user_id', 'event_key'])
-        query = select(notifications).where(notifications.c.user_id == user['id']).order_by(notifications.c.id.desc()).limit(100)
-        return [{key: val for key, val in row.items() if key not in {'user_id', 'event_key'}}
-                for row in conn.execute(query).mappings()]
+            upcoming = select(grades).where(
+                grades.c.user_id == user['id'],
+                grades.c.exam_date.between(first, first + timedelta(days=28)),
+            )
+            for exam in conn.execute(upcoming):
+                retake = exam.result in {'Неудовлетворительно', 'Не зачтено'}
+                title = 'Предстоит пересдача' if retake else 'Предстоит аттестация'
+                key = f'exam-{exam.id}-{exam.exam_date}'
+                exams[key] = {'subject': exam.subject, 'date': exam.exam_date, 'retake': retake}
+                insert_once(conn, notifications, dict(
+                    user_id=user['id'], kind='exam', title=title, message=exam.subject,
+                    created_at=now(), event_key=key,
+                ), ['user_id', 'event_key'])
+        query = select(notifications).where(
+            notifications.c.user_id == user['id'],
+            or_(notifications.c.kind != 'exam', notifications.c.event_key.in_(exams)),
+        ).order_by(notifications.c.id.desc()).limit(100)
+        return [
+            {
+                **{key: val for key, val in row.items() if key not in {'user_id', 'event_key'}},
+                **({'exam': exams[row['event_key']]} if row['event_key'] in exams else {}),
+            }
+            for row in conn.execute(query).mappings()
+        ]
 
 
 @router.post('/notifications/{notification_id}/read', status_code=204)

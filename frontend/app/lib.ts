@@ -59,11 +59,12 @@ export type Lesson = {
   id: string; date: string; start: string; end: string; subject: string
   kind: string; teacher: string | null; room: string | null; change: string | null
 }
-export type Schedule = { source: 'demo' | 'rea'; start: string; end: string; group: string; lessons: Lesson[] }
+export type Schedule = { source: 'demo' | 'rea'; start: string; end: string; group: string | null; lessons: Lesson[] }
 export type Grade = { subject: string; kind: string; result: string | null; exam_date: string | null }
 export type Notice = {
-  id: number; kind: 'request' | 'schedule' | 'announcement'; title: string; message: string
+  id: number; kind: 'request' | 'schedule' | 'announcement' | 'exam'; title: string; message: string
   request_id: string | null; created_at: string; read_at: string | null
+  exam?: { subject: string; date: string; retake: boolean }
 }
 export const scenarioNames = { illness: 'Я заболел', retake: 'Мне нужна пересдача', certificate: 'Мне нужна справка', other: 'Не знаю, куда обратиться' }
 export const statuses = { submitted: 'Получено', review: 'На рассмотрении', clarification: 'Нужно уточнение', resolved: 'Решено', rejected: 'Отклонено' }

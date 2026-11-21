@@ -39,6 +39,7 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
   const allowed = staff ? nav.filter(item => ['requests', 'notifications', 'profile'].includes(item.id)) : nav
   const [, section, remainder] = route.split('/')
   const page = allowed.some(item => item.id === section) ? section : staff ? 'requests' : 'home'
+  const retakeSubject = remainder?.startsWith('retake?') ? new URLSearchParams(remainder.slice(7)).get('subject') ?? undefined : undefined
   const [open, setOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [error, setError] = useState('')
@@ -90,9 +91,9 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
       {error && <Problem text={error} />}
       {page === 'home' && <Home user={user} />}
       {page === 'schedule' && <SchedulePage />}
-      {page === 'grades' && <GradesPage />}
+      {page === 'grades' && <GradesPage key={remainder ?? 'grades'} showSession={remainder === 'session'} />}
       {page === 'rating' && <RatingPage />}
-      {page === 'new' && <Wizard user={user} />}
+      {page === 'new' && <Wizard key={retakeSubject ?? 'new'} user={user} retakeSubject={retakeSubject} />}
       {page === 'requests' && (remainder ? <CaseDetails key={remainder} id={remainder} staff={staff} onChange={reload} /> : <CaseList staff={staff} />)}
       {page === 'campus' && <Campus key={remainder} room={safeDecode(remainder)} />}
       {page === 'catalog' && <EducationCatalog />}
@@ -128,7 +129,7 @@ function Home({ user }: { user: Profile }) {
       </div>
       <div className="panel home-today">
         <header className="panel-head"><h2>Твой день</h2><a href="#app/schedule" className="text-link">Расписание <ChevronRight size={16} /></a></header>
-        <p className="muted small">Демонстрационное расписание · {user.group}</p>
+        <p className="muted small">{['Демонстрационное расписание', user.group].filter(Boolean).join(' · ')}</p>
         {timetable.loading && <Busy />}
         {timetable.error && <Problem text={timetable.error} retry={timetable.reload} />}
         {timetable.data && <LessonList lessons={timetable.data.lessons} />}
@@ -180,7 +181,13 @@ function Notifications({ resource }: { resource: ReturnType<typeof useResource<N
     <div className="stack">{resource.data?.map(item => {
       const seen = item.read_at || read.includes(item.id)
       return <article className={'panel notice' + (seen ? '' : ' unread')} key={item.id}>
-        <div><p className="muted small">{formatTime(item.created_at)}</p><h2>{item.title}</h2><p>{item.message}</p>
+        <div><p className="muted small">{formatTime(item.created_at)}</p><h2>{item.title}</h2>
+          {item.exam ? <p>{item.exam.subject} · {formatDate(item.exam.date)}</p> : <p>{item.message}</p>}
+          {item.exam && <a className="text-link" href={item.exam.retake
+            ? '#app/new/retake?' + new URLSearchParams({ subject: item.exam.subject })
+            : '#app/grades/session'} onClick={() => { if (!seen) void mark(item.id) }}>
+            {item.exam.retake ? 'Уточнить условия пересдачи' : 'Открыть сессию'} <ChevronRight size={16} />
+          </a>}
           {item.request_id && <a className="text-link" href={'#app/requests/' + item.request_id} onClick={() => { if (!seen) void mark(item.id) }}>Открыть обращение <ChevronRight size={16} /></a>}</div>
         {!seen && <button className="button secondary" disabled={pending === item.id} onClick={() => void mark(item.id)}>Отметить прочитанным</button>}
       </article>

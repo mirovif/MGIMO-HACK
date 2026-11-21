@@ -203,6 +203,27 @@ def test_rating_shows_only_the_current_students_points(tmp_path):
         assert client.get('/api/rating').status_code == 403
 
 
+def test_session_reminders_use_the_current_students_exam_schedule(tmp_path):
+    app = create_app(f'sqlite:///{(tmp_path / "reminders.db").as_posix()}')
+    with TestClient(app) as client:
+        login(client, 'student1')
+        session = [item for item in client.get('/api/grades').json() if item['exam_date']]
+        notices = [item for item in client.get('/api/notifications').json() if item['kind'] == 'exam']
+        assert [(item['exam']['subject'], item['exam']['date']) for item in notices] == [
+            (item['subject'], item['exam_date']) for item in session
+        ]
+        assert notices and notices[0]['exam']['retake'] is False
+        key = notices[0]['id']
+        assert client.post(f'/api/notifications/{key}/read').status_code == 204
+        assert [item['id'] for item in client.get('/api/notifications').json() if item['kind'] == 'exam'] == [key]
+        assert next(item for item in client.get('/api/notifications').json() if item['id'] == key)['read_at']
+
+        login(client, 'student2')
+        notices = [item for item in client.get('/api/notifications').json() if item['kind'] == 'exam']
+        assert notices and all(item['id'] != key for item in notices)
+        assert all(item['exam']['subject'] != 'Финансы' for item in notices)
+
+
 def test_request_round_trip_and_restart(tmp_path):
     url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
     app = create_app(url)

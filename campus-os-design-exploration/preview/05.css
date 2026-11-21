@@ -318,26 +318,41 @@ body.relief {
 
 .relief-route-preview {
   --route-angle: -7deg;
-  --route-visible-height: 361;
   grid-area: map;
   position: relative;
   inline-size: min(77%, 20rem);
-  aspect-ratio: 290 / var(--route-visible-height);
+  min-block-size: clamp(12rem, 24vw, 19rem);
+  display: grid;
+  align-content: center;
+  gap: 1.4rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
   justify-self: center;
   overflow: hidden;
+  background: #dce5eb;
+  color: #233346;
   border-radius: 7% 25% 7% 7% / 6% 24% 6% 6%;
   box-shadow: 0 0 0 .32rem #6c8ca7, 0 1.15rem 2.75rem #070e1880;
   transform: rotate(var(--route-angle));
 }
 
-.relief-route-preview img {
-  /* The map surface in the original 321 × 375 screenshot starts at (6, 2). */
+.relief-route-preview figcaption { color: #3b5267; }
+.relief-route-preview ol { position: relative; display: grid; gap: 2rem; margin: 0; padding: 0; list-style: none; }
+.relief-route-preview ol::before {
+  content: '';
   position: absolute;
-  inset: calc(-200% / var(--route-visible-height)) auto auto calc(-600% / 290);
-  inline-size: calc(32100% / 290);
-  max-inline-size: none;
-  block-size: auto;
+  inset: .6rem auto .6rem .45rem;
+  border-inline-start: .16rem solid #42698a;
 }
+.relief-route-preview li { position: relative; display: flex; align-items: center; gap: .75rem; font-weight: 700; }
+.relief-route-preview li::before {
+  content: '';
+  inline-size: 1rem;
+  block-size: 1rem;
+  flex: 0 0 1rem;
+  border-radius: 50%;
+  background: #42698a;
+}
+.relief-footer { padding-block: 1.5rem 2rem; color: var(--muted); font-size: .9rem; }
 
 .relief-route-trace {
   position: absolute;

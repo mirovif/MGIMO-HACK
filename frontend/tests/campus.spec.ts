@@ -269,6 +269,35 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
   }
 })
 
+test('a session reminder opens the schedule and a retake reminder starts a prefilled request at 360 px', async ({ browser }) => {
+  const normalContext = await browser.newContext(mobile)
+  const retakeContext = await browser.newContext(mobile)
+  try {
+    const normal = await normalContext.newPage()
+    await login(normal, 'student1', 'notifications')
+    const session = normal.locator('article').filter({ hasText: 'Предстоит аттестация' })
+    await expect(session).toContainText('Финансы')
+    await session.getByRole('link', { name: 'Открыть сессию' }).click()
+    await expect(normal.getByRole('button', { name: 'Сессия' })).toHaveAttribute('aria-pressed', 'true')
+
+    const retake = await retakeContext.newPage()
+    await login(retake, 'student3', 'notifications')
+    const reminder = retake.locator('article').filter({ hasText: 'Предстоит пересдача' })
+    await expect(reminder).toContainText('Базы данных')
+    await reminder.getByRole('link', { name: 'Уточнить условия пересдачи' }).click()
+    await expect(retake.getByLabel('Выберите дисциплину')).toHaveValue('Базы данных')
+    await advance(retake)
+    await retake.getByRole('textbox').fill('Демо-запрос о пересдаче.')
+    await advance(retake)
+    await expect(retake.locator('.wizard')).toContainText('Базы данных')
+    await retake.getByRole('button', { name: 'Отправить обращение' }).click()
+    await expect(retake.getByRole('heading', { name: 'Обращение отправлено' })).toBeVisible()
+    await withoutOverflow(retake)
+  } finally {
+    await Promise.all([normalContext.close(), retakeContext.close()])
+  }
+})
+
 test('all student sections and the remaining scenarios work at 360 px', async ({ browser }) => {
   const context = await browser.newContext(mobile)
   const page = await context.newPage()
