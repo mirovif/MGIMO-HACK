@@ -5,6 +5,10 @@ const config: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
   turbopack: { root: resolve(__dirname, '..') },
+  ...(process.env.UTRET_STANDALONE === '1' && {
+    output: 'standalone',
+    outputFileTracingRoot: resolve(__dirname, '..'),
+  }),
   async rewrites() {
     const site = [{ source: '/', destination: '/preview/05.html' }]
     if (process.env.VERCEL) return site

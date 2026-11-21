@@ -4,6 +4,10 @@
 
 Ветка **`master`** объединяет сайт UTRET, личный кабинет Campus OS и его API. Next.js собирает обложку UTRET и её ресурсы из `campus-os-design-exploration/`. Сайт открывается по `/`, кабинет по `/lks`, обзор кабинета по `/campus-os`.
 
+## Развёртывание на Amvera
+
+[Инструкция и переменные окружения](amvera/README.md)
+
 ## Запуск в Windows
 
 Нужны Node.js 20.9+ и Python 3.12+. Выполните из корня репозитория в PowerShell.
