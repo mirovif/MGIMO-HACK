@@ -215,6 +215,7 @@ select { appearance: none; padding-right: 32px; background-repeat: no-repeat; ba
 .campus-room { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; overflow-wrap: anywhere; }
 .campus-room .feedback, .campus-room [role=status] { flex-basis: 100%; }
 .copy-status { color: var(--success); }
+.universe-section > .section-head { justify-content: center; text-align: center; border-bottom: 0; padding-bottom: 0; }
 .account-catalog .education-universe { --eu-gutter: clamp(16px, 3vw, 42px); min-block-size: clamp(32rem, 75svh, 48rem); border: 1px solid var(--line); border-radius: 5px; }
 .student-ticket { display: grid; gap: 18px; max-width: 700px; padding: clamp(18px, 3vw, 36px); background: radial-gradient(ellipse at 100% 0, var(--utret-relief, #384552), var(--surface) 74%); }
 .student-ticket .student-ticket-name { font: 550 clamp(1.75rem, 3.4vw, 3.4rem)/1.1 var(--display); overflow-wrap: anywhere; }

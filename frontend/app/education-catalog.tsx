@@ -26,7 +26,7 @@ export function EducationCatalog() {
     return () => { active = false; dispose?.() }
   }, [])
 
-  return <Section title={educationUniverseTitle}>
+  return <Section title={educationUniverseTitle} className="universe-section">
     <link rel="stylesheet" href="/education-universe/universe.css" precedence="utret" />
     {unavailable
       ? <Problem text="Не удалось загрузить образовательную вселенную." retry={() => window.location.reload()} />
