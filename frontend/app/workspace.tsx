@@ -34,7 +34,7 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
   user: Profile; route: string; onProfileChange: (profile: Profile) => void; onLogout: () => void
 }) {
   const staff = user.role === 'staff'
-  const headerName = user.display_name ?? user.name
+  const headerName = user.name
   const allowed = staff ? nav.filter(item => ['requests', 'notifications', 'profile'].includes(item.id)) : nav
   const [, section, remainder] = route.split('/')
   const page = allowed.some(item => item.id === section) ? section : staff ? 'requests' : 'home'
@@ -114,7 +114,9 @@ function safeDecode(value?: string) {
 function Home({ user }: { user: Profile }) {
   const timetable = useResource<Schedule>('/schedule')
   const cases = useResource<CaseSummary[]>('/requests')
-  return <Section title={'Привет, ' + (user.display_name ?? user.name.split(' ')[0])} text={formatDate(moscowToday(), true)}>
+  const nameParts = user.name.split(/\s+/)
+  const greetingName = nameParts.length === 3 ? nameParts[1] : user.name
+  return <Section title={'Привет, ' + greetingName} text={formatDate(moscowToday(), true)}>
     <div className="home-grid">
       <div className="home-hero">
         <div className="kicker"><NotebookPen size={19} /> Цифровой деканат</div>
@@ -149,7 +151,7 @@ function StudentTicket({ user }: { user: Profile }) {
     <article className="panel student-ticket">
       <header className="panel-head"><span className="utret-brand">UTRET</span><span className="muted small">РЭУ имени Г. В. Плеханова</span></header>
       <h2>{user.name}</h2>
-      <ProfileFacts profile={user} />
+      <ProfileFacts profile={user} showName={false} />
       <div className="button-group">
         <a className="button primary" href="#app/grades">Открыть зачётку <ArrowUpRight size={17} /></a>
         <a className="button secondary" href="#app/profile">Профиль</a>

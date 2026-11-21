@@ -82,7 +82,7 @@ def test_profile_details_backfill_preserves_existing_users_and_details(tmp_path,
         client.cookies.set('campus_session', token)
         response = client.get('/api/profile/details')
         assert response.status_code == 200
-        assert response.json()['full_name'] == profile['name']
+        assert response.json()['full_name'] == client.get('/api/profile').json()['name'] == 'Анна Орлова'
         assert response.json()['email'] == 'updated@example.org'
 
     monkeypatch.setenv('DEMO_SEED', 'false')
@@ -94,7 +94,7 @@ def test_profile_details_backfill_preserves_existing_users_and_details(tmp_path,
         response = client.get('/api/profile/details')
         assert response.status_code == 200
         assert response.json() == {
-            'full_name': profile['name'], 'email': None, 'phone': None, 'specialization': None,
+            'full_name': 'Анна Орлова', 'email': None, 'phone': None, 'specialization': None,
             'education_level': None, 'study_mode': None, 'study_basis': None,
         }
 
@@ -150,7 +150,7 @@ def test_profile_edit_saves_all_fields_without_changes_to_account_identity(tmp_p
 
         updated = student.put(endpoint, json=form)
         assert updated.status_code == 200
-        assert updated.json()['profile'] == {**account, 'display_name': 'Мария'}
+        assert updated.json()['profile'] == {**account, 'name': 'Орлова Мария Сергеевна', 'display_name': 'Мария'}
         expected = {**original, 'full_name': 'Орлова Мария Сергеевна',
                     'email': 'new.student@example.org', 'phone': '+7 (901) 123-45-67'}
         assert updated.json()['details'] == expected
@@ -163,6 +163,24 @@ def test_profile_edit_saves_all_fields_without_changes_to_account_identity(tmp_p
         assert cleared['profile']['display_name'] is None
         assert cleared['details']['phone'] is None
         assert cleared['details']['email'] is None
+
+
+def test_full_name_is_used_by_the_cabinet_and_new_certificate_requests(tmp_path):
+    url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
+    name = 'Орлова Мария Сергеевна'
+    with TestClient(create_app(url)) as student:
+        original = login(student, 'student1')
+        updated = student.put('/api/profile/details', json={'full_name': name, 'email': '', 'phone': ''})
+        assert updated.status_code == 200
+        assert updated.json()['profile'] == {**original, 'name': name}
+        assert student.get('/api/profile').json()['name'] == name
+        assert login(student, 'student1')['name'] == name
+
+        response = student.post('/api/requests', headers={'Idempotency-Key': 'c60d1141-f64a-4518-9d0c-491676df44ad'},
+                                json={'scenario': 'certificate', 'details': {'certificate_type': 'study'}})
+        assert response.status_code == 201
+        case = response.json()
+        assert case['details']['profile']['name'] == case['student'] == case['history'][0]['actor'] == name
 
 
 def test_request_round_trip_and_restart(tmp_path):

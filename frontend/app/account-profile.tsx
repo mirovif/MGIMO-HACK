@@ -16,7 +16,7 @@ type ProfileDetails = {
   study_basis: string | null
 }
 
-type ProfileDraft = Record<'display_name' | 'full_name' | 'phone' | 'email', string>
+type ProfileDraft = Record<'full_name' | 'phone' | 'email', string>
 
 export function AccountProfile({ user, action, onProfileChange }: {
   user: Profile; action: ReactNode; onProfileChange: (profile: Profile) => void
@@ -28,13 +28,19 @@ export function AccountProfile({ user, action, onProfileChange }: {
   const [error, setError] = useState('')
   const details = savedDetails ?? profile.data
   const student = user.role === 'student'
-  const defaultName = user.name.split(' ')[0]
   const fullName = details?.full_name || user.name
+  const studyFields: [string, string | null | undefined][] = [
+    ['Направление', user.program],
+    ['Профиль', details?.specialization],
+    ['Уровень подготовки', details?.education_level],
+    ['Форма обучения', details?.study_mode],
+    ['Основа обучения', details?.study_basis],
+  ]
+  const hasStudyInfo = user.faculty || user.year || user.group || studyFields.some(([, value]) => value)
 
   function edit() {
     setError('')
     setDraft({
-      display_name: user.display_name ?? '',
       full_name: fullName,
       phone: details?.phone ?? '',
       email: details?.email ?? '',
@@ -53,7 +59,7 @@ export function AccountProfile({ user, action, onProfileChange }: {
     try {
       const saved = await api<{ profile: Profile; details: ProfileDetails }>('/profile/details', {
         method: 'PUT',
-        body: JSON.stringify({ ...draft, display_name: draft.display_name.trim() || null }),
+        body: JSON.stringify(draft),
       })
       setSavedDetails(saved.details)
       onProfileChange(saved.profile)
@@ -77,7 +83,6 @@ export function AccountProfile({ user, action, onProfileChange }: {
         </div>
         <div className={styles.identityHeading}>
           <h2 id="profile-name" className={styles.name}>{fullName}</h2>
-          <p className={styles.displayName + ' muted small'}>Имя в кабинете — {user.display_name ?? defaultName}</p>
           {details && !draft && <div>
             <button type="button" className="text-button" onClick={edit}>
               <Pencil size={16} aria-hidden="true" /> Редактировать профиль
@@ -86,13 +91,9 @@ export function AccountProfile({ user, action, onProfileChange }: {
         </div>
         {draft ? <form className={'stack ' + styles.editForm} onSubmit={save} aria-label="Редактирование профиля">
           <div className={styles.editFields}>
-            <label>Имя в кабинете
-              <input value={draft.display_name} onChange={event => change('display_name', event.target.value)}
-                maxLength={40} autoComplete="nickname" autoFocus placeholder={defaultName} disabled={pending} />
-            </label>
-            <label>ФИО
+            <label className={styles.fullNameField}>ФИО
               <input value={draft.full_name} onChange={event => change('full_name', event.target.value)}
-                maxLength={160} autoComplete="name" required disabled={pending} />
+                maxLength={160} autoComplete="name" autoFocus required disabled={pending} />
             </label>
             <label>Мобильный телефон
               <input type="tel" value={draft.phone} onChange={event => change('phone', event.target.value)}
@@ -122,19 +123,13 @@ export function AccountProfile({ user, action, onProfileChange }: {
           ]} />}
         </div>}
       </section>
-      {student && (
+      {student && hasStudyInfo && (
         <section className={'panel ' + styles.study} aria-labelledby="profile-study">
           <h2 id="profile-study">Моё обучение</h2>
           <div className={styles.studyContent}>
             <div className={styles.studyInfo}>
-              <h3>{user.faculty || 'Сведения об обучении'}</h3>
-              <ProfileFields fields={[
-                ['Направление', user.program],
-                ['Профиль', details?.specialization],
-                ['Уровень подготовки', details?.education_level],
-                ['Форма обучения', details?.study_mode],
-                ['Основа обучения', details?.study_basis],
-              ]} />
+              {user.faculty && <h3>{user.faculty}</h3>}
+              <ProfileFields fields={studyFields} />
             </div>
             {(user.year || user.group) && <div className={styles.enrollment}>
               {user.year && <strong>{user.year}-й курс</strong>}
@@ -148,8 +143,10 @@ export function AccountProfile({ user, action, onProfileChange }: {
 }
 
 function ProfileFields({ fields }: { fields: [string, string | null | undefined][] }) {
+  const filled = fields.filter(([, value]) => value != null)
+  if (!filled.length) return null
   return <dl className="facts">
-    {fields.filter(([, value]) => value != null).map(([label, value]) => (
+    {filled.map(([label, value]) => (
       <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
     ))}
   </dl>

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from sqlalchemy import (
     JSON, Column, Date, ForeignKey, Index, Integer, LargeBinary, MetaData, String,
-    Table, Text, UniqueConstraint, create_engine, event, text,
+    Table, Text, UniqueConstraint, create_engine, event, func, text,
 )
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -24,6 +24,7 @@ profile_details = Table(
     Column('specialization', String(160)), Column('education_level', String(120)),
     Column('study_mode', String(64)), Column('study_basis', String(64)),
 )
+profile_full_name = func.coalesce(func.nullif(func.trim(profile_details.c.full_name), ''), users.c.name)
 profile_names = Table(
     'profile_names', meta,
     Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),

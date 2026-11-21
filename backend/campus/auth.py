@@ -12,7 +12,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
-from .db import profile_details, profile_names, sessions, users
+from .db import profile_details, profile_full_name, profile_names, sessions, users
 
 router = APIRouter(prefix='/api')
 COOKIE = 'campus_session'
@@ -38,7 +38,10 @@ def profile(row):
 
 
 def profile_query():
-    return select(users, profile_names.c.display_name).outerjoin(profile_names, profile_names.c.user_id == users.c.id)
+    account_columns = [column for column in users.c if column.key != 'name']
+    return select(*account_columns, profile_full_name.label('name'), profile_names.c.display_name).outerjoin_from(
+        users, profile_details, profile_details.c.user_id == users.c.id,
+    ).outerjoin(profile_names, profile_names.c.user_id == users.c.id)
 
 
 def current_user(request: Request):
@@ -101,6 +104,7 @@ class DisplayNameUpdate(BaseModel):
 
 
 class ProfileUpdate(DisplayNameUpdate):
+    display_name: str | None = None
     full_name: str
     email: EmailStr | None
     phone: str | None
@@ -203,11 +207,13 @@ def read_profile_details(request: Request, user=Depends(current_user)) -> Profil
 def update_profile_details(data: ProfileUpdate, request: Request, user=Depends(current_user)):
     fields = data.model_dump(exclude={'display_name'})
     with request.app.state.engine.begin() as conn:
-        save_display_name(conn, user['id'], data.display_name)
+        if 'display_name' in data.model_fields_set:
+            save_display_name(conn, user['id'], data.display_name)
+            user = {**user, 'display_name': data.display_name}
         insert = postgres_insert if conn.dialect.name == 'postgresql' else sqlite_insert
         statement = insert(profile_details).values(user_id=user['id'], **fields)
         row = conn.execute(statement.on_conflict_do_update(
             index_elements=[profile_details.c.user_id],
             set_={field: statement.excluded[field] for field in fields},
         ).returning(*profile_details.c)).mappings().one()
-    return {'profile': {**user, 'display_name': data.display_name}, 'details': ProfileDetails(**row)}
+    return {'profile': {**user, 'name': row['full_name']}, 'details': ProfileDetails(**row)}

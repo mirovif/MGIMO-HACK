@@ -11,7 +11,7 @@ from sqlalchemy import select, update
 from starlette.datastructures import UploadFile
 
 from .auth import current_user, staff_only, student_only
-from .db import attachments, grades, history, insert_once, notifications, now, requests, users
+from .db import attachments, grades, history, insert_once, notifications, now, profile_details, profile_full_name, requests, users
 from .demo import demo_lessons
 
 router = APIRouter(prefix='/api/requests')
@@ -83,7 +83,9 @@ def public_case(row):
 
 
 def case_query(user):
-    query = select(requests, users.c.name).join(users, users.c.id == requests.c.user_id)
+    query = select(requests, profile_full_name.label('name')).join(users, users.c.id == requests.c.user_id).outerjoin(
+        profile_details, profile_details.c.user_id == users.c.id,
+    )
     return query.where(requests.c.user_id == user['id']) if user['role'] == 'student' else query
 
 
@@ -97,8 +99,10 @@ def get_case(conn, user, case_id):
 def detail(conn, row):
     entries = conn.execute(select(
         history.c.id, history.c.action, history.c.status, history.c.message, history.c.created_at,
-        users.c.name.label('actor'), users.c.role,
-    ).join(users, history.c.actor_id == users.c.id).where(history.c.request_id == row['id']).order_by(history.c.id)).mappings()
+        profile_full_name.label('actor'), users.c.role,
+    ).join(users, history.c.actor_id == users.c.id).outerjoin(
+        profile_details, profile_details.c.user_id == users.c.id,
+    ).where(history.c.request_id == row['id']).order_by(history.c.id)).mappings()
     attachment = conn.scalar(select(attachments.c.name).where(attachments.c.request_id == row['id']))
     return {**public_case(row), 'details': row['details'], 'attachment': attachment,
             'history': [dict(entry) for entry in entries]}

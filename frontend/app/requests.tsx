@@ -11,7 +11,7 @@ import { Busy, Empty, Problem, ProfileFacts, Section, StatusBadge } from './ui'
 const scenarios = {
   illness: { icon: HeartPulse, caption: 'Сообщить о пропуске занятий', steps: ['Период отсутствия', 'Пропущенные пары', 'Комментарий и документ', 'Проверка данных'] },
   retake: { icon: RotateCcw, caption: 'Уточнить возможность пересдачи', steps: ['Дисциплина', 'Описание проблемы', 'Проверка данных'] },
-  certificate: { icon: FileText, caption: 'Запросить документ в деканате', steps: ['Тип документа', 'Данные профиля', 'Проверка данных'] },
+  certificate: { icon: FileText, caption: 'Запросить документ в деканате', steps: ['Тип документа', 'Проверка данных'] },
   other: { icon: CircleHelp, caption: 'Направить вопрос сотруднику', steps: ['Категория', 'Описание вопроса', 'Проверка данных'] },
 }
 type Draft = {
@@ -28,7 +28,10 @@ function makeDraft(scenario: Scenario): Draft {
 function loadDraft(storageKey: string): Draft | null {
   try {
     const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null')
-    if (value && Object.hasOwn(scenarios, value.scenario) && typeof value.key === 'string') return value
+    if (value && Object.hasOwn(scenarios, value.scenario) && typeof value.key === 'string') {
+      if (value.scenario === 'certificate' && value.step === 2) return { ...value, step: 1 }
+      return value
+    }
   } catch {}
   return null
 }
@@ -162,7 +165,6 @@ export function Wizard({ user }: { user: Profile }) {
         {scenario === 'certificate' && step === 0 && <label>Какой документ вам нужен?<select required value={draft.certificate} onChange={event => update({ certificate: event.target.value as Draft['certificate'] })}>
           <option value="">Выбрать тип</option>{Object.entries(certificates).map(([key, name]) => <option key={key} value={key}>{name}</option>)}
         </select></label>}
-        {scenario === 'certificate' && step === 1 && <><p className="muted">Данные подставлены из вашего профиля.</p><ProfileFacts profile={user} /></>}
         {scenario === 'other' && step === 0 && <label>О чём ваш вопрос?<select required value={draft.category} onChange={event => update({ category: event.target.value as Draft['category'] })}>
           <option value="">Выбрать категорию</option>{Object.entries(caseCategories).map(([key, name]) => <option key={key} value={key}>{name}</option>)}
         </select></label>}

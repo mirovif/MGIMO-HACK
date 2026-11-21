@@ -83,7 +83,7 @@ test('UTRET opens a matching cabinet with the REU map, catalog and Comet at 360 
   }
 })
 
-test('all four editable profile fields persist at 360 px and the display name updates the greeting', async ({ browser }) => {
+test('one full-name field updates the profile, ticket, greeting and certificate review at 360 px', async ({ browser }) => {
   const context = await browser.newContext(mobile)
   const page = await context.newPage()
   try {
@@ -91,8 +91,8 @@ test('all four editable profile fields persist at 360 px and the display name up
     const edit = page.getByRole('button', { name: 'Редактировать профиль' })
     const save = page.getByRole('button', { name: 'Сохранить', exact: true })
     await edit.click()
+    await expect(page.getByLabel('Имя в кабинете', { exact: true })).toHaveCount(0)
     const changes = [
-      ['Имя в кабинете', 'Миша Александр'],
       ['ФИО', 'Светлов Михаил Алексеевич'],
       ['Мобильный телефон', '+7 (900) 000-01-02'],
       ['Email', 'profile-edit@example.org'],
@@ -105,16 +105,25 @@ test('all four editable profile fields persist at 360 px and the display name up
     }
     await withoutOverflow(page)
     await save.click()
-    await expect(page.getByText('Имя в кабинете — Миша Александр')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Светлов Михаил Алексеевич' })).toBeVisible()
     await expect(page.getByText('profile-edit@example.org', { exact: true })).toBeVisible()
     await expect(page.getByText('+7 (900) 000-01-02', { exact: true })).toBeVisible()
     await withoutOverflow(page)
     await navigate(page, 'Обзор')
-    const greeting = page.getByRole('heading', { name: 'Привет, Миша Александр', exact: true })
+    const greeting = page.getByRole('heading', { name: 'Привет, Михаил', exact: true })
     await expect(greeting).toBeVisible()
     await page.reload()
     await expect(greeting).toBeVisible()
+    await navigate(page, 'Студенческий билет')
+    await expect(page.locator('.student-ticket').getByText('Светлов Михаил Алексеевич', { exact: true })).toHaveCount(1)
+    await expect(page.locator('.student-ticket').getByText('ФИО', { exact: true })).toHaveCount(0)
+    await navigate(page, 'Решить ситуацию')
+    await page.getByRole('button', { name: /Мне нужна справка/ }).click()
+    await page.getByLabel('Какой документ вам нужен?').selectOption('study')
+    await advance(page)
+    await expect(page.getByRole('heading', { name: 'Проверка данных', exact: true })).toBeVisible()
+    await expect(page.locator('.wizard').getByText('Светлов Михаил Алексеевич', { exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Отправить обращение', exact: true })).toBeEnabled()
     await navigate(page, 'Профиль')
     await edit.click()
     for (const [label, value] of changes) {
@@ -128,7 +137,7 @@ test('all four editable profile fields persist at 360 px and the display name up
       await page.getByLabel(label, { exact: true }).fill(value)
     }
     await save.click()
-    await expect(page.getByText('Имя в кабинете — Михаил')).toBeVisible()
+    await expect(page.getByRole('heading', { name: original.get('ФИО'), exact: true })).toBeVisible()
   } finally {
     await context.close()
   }
@@ -212,13 +221,12 @@ test('student and staff share a persistent case history at 360 px', async ({ bro
     await student.getByRole('button', { name: /Мне нужна справка/ }).click()
     await student.getByLabel('Какой документ вам нужен?').selectOption('study')
     await advance(student)
-    await expect(student.getByText('Анна Орлова', { exact: true }).last()).toBeVisible()
+    await expect(student.locator('.wizard').getByText('Орлова Анна Сергеевна', { exact: true })).toBeVisible()
     await student.getByRole('button', { name: 'Назад' }).click()
     await expect(student.getByLabel('Какой документ вам нужен?')).toHaveValue('study')
     await advance(student)
     await student.reload()
-    await expect(student.getByRole('heading', { name: 'Данные профиля' })).toBeVisible()
-    await advance(student)
+    await expect(student.getByRole('heading', { name: 'Проверка данных', exact: true })).toBeVisible()
     await withoutOverflow(student)
     await student.getByRole('button', { name: 'Отправить обращение' }).click()
     await expect(student.getByRole('heading', { name: 'Обращение отправлено' })).toBeVisible()

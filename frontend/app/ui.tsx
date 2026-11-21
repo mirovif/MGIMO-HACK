@@ -28,7 +28,11 @@ export function External({ href, children, className = 'text-link' }: { href: st
   return <a href={href} target="_blank" rel="noreferrer" className={className}>{children}<ArrowUpRight size={16} aria-hidden="true" /></a>
 }
 
-export function ProfileFacts({ profile }: { profile: Pick<Profile, 'name' | 'faculty' | 'program' | 'year' | 'group'> }) {
-  const fields = [['ФИО', profile.name], ['Факультет / школа', profile.faculty], ['Направление', profile.program], ['Курс', profile.year], ['Группа', profile.group]]
-  return <dl className="facts">{fields.filter(([, value]) => value != null).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+export function ProfileFacts({ profile, showName = true }: {
+  profile: Pick<Profile, 'name' | 'faculty' | 'program' | 'year' | 'group'>; showName?: boolean
+}) {
+  const fields = [['ФИО', showName ? profile.name : null], ['Факультет / школа', profile.faculty], ['Направление', profile.program], ['Курс', profile.year], ['Группа', profile.group]]
+    .filter(([, value]) => value != null)
+  if (!fields.length) return null
+  return <dl className="facts">{fields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
 }
