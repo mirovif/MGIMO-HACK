@@ -107,6 +107,32 @@ export function GradesPage() {
   </Section>
 }
 
+type CoursePoints = { subject: string; earned: number; maximum: number }
+type Rating = { earned: number; maximum: number; courses: CoursePoints[] }
+
+export function RatingPage() {
+  const { data, loading, error, reload } = useResource<Rating>('/rating')
+  return <Section title="Рейтинг" text="Демонстрационные баллы за текущий семестр.">
+    {loading && <Busy text="Загружаем баллы…" />}
+    {error && <Problem text={error} retry={reload} />}
+    {data && (data.courses.length ? <>
+      <section className="panel rating-summary" aria-labelledby="rating-total">
+        <h2 id="rating-total">Баллы за семестр</h2>
+        <p><strong>{data.earned}</strong> из {data.maximum}</p>
+        <progress value={data.earned} max={data.maximum} aria-labelledby="rating-total" />
+      </section>
+      <section className="panel rating-courses" aria-labelledby="rating-courses">
+        <h2 id="rating-courses">По дисциплинам</h2>
+        <ul>{data.courses.map(course => <li key={course.subject}>
+          <strong>{course.subject}</strong>
+          <span>{course.earned} из {course.maximum}</span>
+          <progress value={course.earned} max={course.maximum} aria-label={course.subject} />
+        </li>)}</ul>
+      </section>
+    </> : <Empty title="Баллов пока нет">Здесь появятся баллы по дисциплинам.</Empty>)}
+  </Section>
+}
+
 export function Campus({ room }: { room?: string }) {
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')

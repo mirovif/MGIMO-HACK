@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import select
 
-from .db import events, grades, insert_once, notifications, now, profile_details, users
+from .db import events, grades, insert_once, notifications, now, profile_details, ratings, users
 
 MOSCOW = timezone(timedelta(hours=3), 'Europe/Moscow')
 
@@ -38,6 +38,13 @@ DEMO_EVENTS = [
     (2, 'community', 'Вечер настольных игр', 'Открытая встреча студенческого сообщества.', 'Студенческое пространство', 2, '18:00', '20:00'),
     (3, 'study', 'Практикум по работе с данными', 'Решим несколько задач на небольшом наборе данных.', 'Корпус 3, аудитория 412', 4, '14:00', '15:30'),
 ]
+ECONOMICS_SUBJECTS = ('Микроэкономика', 'Иностранный язык', 'Статистика', 'Финансы')
+COMPUTING_SUBJECTS = ('Базы данных', 'Алгоритмы', 'Проектирование ИС', 'Аналитика данных')
+DEMO_RATINGS = {
+    'student1': (ECONOMICS_SUBJECTS, (85, 72, 63, 54)),
+    'student2': (COMPUTING_SUBJECTS, (74, 81, 57, 48)),
+    'student3': (COMPUTING_SUBJECTS, (61, 69, 76, 52)),
+}
 
 
 def today():
@@ -59,6 +66,13 @@ def seed_demo(conn):
         ))
         if demo_user_id is not None:
             insert_once(conn, profile_details, dict(user_id=demo_user_id, **DEMO_PROFILE_DETAILS[login]), ['user_id'])
+    for student in conn.execute(select(users.c.id, users.c.login).where(
+        users.c.role == 'student', users.c.login.in_(DEMO_RATINGS),
+    )):
+        subjects, points = DEMO_RATINGS[student.login]
+        for subject, earned in zip(subjects, points, strict=True):
+            insert_once(conn, ratings, dict(user_id=student.id, subject=subject, earned=earned, maximum=100),
+                        ['user_id', 'subject'])
     for identity, student, subject, kind, result, offset in DEMO_GRADES:
         insert_once(conn, grades, dict(id=identity, user_id=student, subject=subject, kind=kind, result=result,
                                        exam_date=today() + timedelta(days=offset) if offset else None), ['id'])
@@ -74,8 +88,7 @@ def seed_demo(conn):
 
 
 def demo_lessons(profile, start: date, end: date):
-    subjects = (('Микроэкономика', 'Иностранный язык', 'Статистика', 'Финансы') if profile['login'] == 'student1'
-                else ('Базы данных', 'Алгоритмы', 'Проектирование ИС', 'Аналитика данных'))
+    subjects = ECONOMICS_SUBJECTS if profile['login'] == 'student1' else COMPUTING_SUBJECTS
     lessons = []
     current = start
     while current <= end:

@@ -289,6 +289,16 @@ test('all student sections and the remaining scenarios work at 360 px', async ({
     await page.getByRole('button', { name: 'Сессия', exact: true }).click()
     await expect(page.getByText('Финансы')).toBeVisible()
 
+    await navigate(page, 'Обзор')
+    await page.getByRole('navigation', { name: 'Быстрые ссылки' }).getByRole('link', { name: 'Рейтинг' }).click()
+    await expect(page).toHaveURL('/lks#app/rating')
+    await expect(page.getByRole('progressbar', { name: 'Баллы за семестр' })).toHaveAttribute('value', '274')
+    await expect(page.getByRole('progressbar', { name: 'Микроэкономика' })).toHaveAttribute('max', '100')
+    await withoutOverflow(page)
+    await navigate(page, 'Обзор')
+    await navigate(page, 'Рейтинг')
+    await expect(page.getByRole('heading', { name: 'Рейтинг', exact: true })).toBeVisible()
+
     await navigate(page, 'Мероприятия')
     await page.getByLabel('Категория').selectOption('career')
     const star = page.locator('.star').first()

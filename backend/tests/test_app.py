@@ -183,6 +183,26 @@ def test_full_name_is_used_by_the_cabinet_and_new_certificate_requests(tmp_path)
         assert case['details']['profile']['name'] == case['student'] == case['history'][0]['actor'] == name
 
 
+def test_rating_shows_only_the_current_students_points(tmp_path):
+    app = create_app(f'sqlite:///{(tmp_path / "rating.db").as_posix()}')
+    with TestClient(app) as client:
+        assert client.get('/api/rating').status_code == 401
+        first = login(client, 'student1')
+        first_rating = client.get('/api/rating').json()
+        assert first_rating['earned'] == sum(row['earned'] for row in first_rating['courses']) == 274
+        assert first_rating['maximum'] == sum(row['maximum'] for row in first_rating['courses']) == 400
+        assert any(row['subject'] == 'Микроэкономика' for row in first_rating['courses'])
+
+        login(client, 'student2')
+        second_rating = client.get('/api/rating', params={'user_id': first['id']}).json()
+        assert second_rating['earned'] == 260
+        assert any(row['subject'] == 'Базы данных' for row in second_rating['courses'])
+        assert all(row['subject'] != 'Микроэкономика' for row in second_rating['courses'])
+
+        login(client, 'staff')
+        assert client.get('/api/rating').status_code == 403
+
+
 def test_request_round_trip_and_restart(tmp_path):
     url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
     app = create_app(url)

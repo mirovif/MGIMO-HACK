@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import delete, select, update
 
 from .auth import current_user, student_only
-from .db import events, favorites, grades, insert_once, notifications, now
+from .db import events, favorites, grades, insert_once, notifications, now, ratings
 from .demo import demo_lessons, today
 
 router = APIRouter(prefix='/api')
@@ -34,6 +34,20 @@ def read_grades(request: Request, user=Depends(student_only)):
         rows = conn.execute(select(grades.c.subject, grades.c.kind, grades.c.result, grades.c.exam_date)
                             .where(grades.c.user_id == user['id']).order_by(grades.c.id)).mappings()
         return [dict(row) for row in rows]
+
+
+@router.get('/rating')
+def read_rating(request: Request, user=Depends(student_only)):
+    query = select(ratings.c.subject, ratings.c.earned, ratings.c.maximum).where(
+        ratings.c.user_id == user['id'],
+    ).order_by(ratings.c.subject)
+    with request.app.state.engine.connect() as conn:
+        courses = [dict(row) for row in conn.execute(query).mappings()]
+    return {
+        'earned': sum(course['earned'] for course in courses),
+        'maximum': sum(course['maximum'] for course in courses),
+        'courses': courses,
+    }
 
 
 @router.get('/events')

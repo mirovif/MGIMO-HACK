@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  ArrowUpRight, Bell, BookOpen, CalendarDays, ChevronRight, CircleUserRound, ClipboardList, GraduationCap, House,
+  ArrowUpRight, Bell, BookOpen, CalendarDays, ChartNoAxesColumn, ChevronRight, CircleUserRound, ClipboardList, GraduationCap, House,
   IdCard, LogOut, MapPin, Menu, MessageCircle, MoveRight, NotebookPen, PartyPopper, RefreshCw, X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -10,13 +10,14 @@ import { api, errorText, formatDate, formatTime, moscowToday, useResource, type 
 import { AssistantPage } from './chat'
 import { EducationCatalog } from './education-catalog'
 import { CaseDetails, CaseList, Wizard } from './requests'
-import { Campus, EventsPage, GradesPage, LessonList, SchedulePage } from './student'
+import { Campus, EventsPage, GradesPage, LessonList, RatingPage, SchedulePage } from './student'
 import { Busy, Empty, Problem, ProfileFacts, Section, StatusBadge } from './ui'
 
 const nav = [
   { id: 'home', label: 'Обзор', icon: House },
   { id: 'schedule', label: 'Расписание', icon: CalendarDays },
   { id: 'grades', label: 'Успеваемость', icon: GraduationCap },
+  { id: 'rating', label: 'Рейтинг', icon: ChartNoAxesColumn },
   { id: 'new', label: 'Решить ситуацию', icon: NotebookPen },
   { id: 'requests', label: 'Мои обращения', icon: ClipboardList },
   { id: 'campus', label: 'Карта РЭУ', icon: MapPin },
@@ -28,7 +29,7 @@ const nav = [
   { id: 'profile', label: 'Профиль', icon: CircleUserRound },
 ]
 
-const shortcuts = nav.filter(item => ['campus', 'catalog', 'ticket', 'assistant'].includes(item.id))
+const shortcuts = ['campus', 'catalog', 'rating', 'assistant'].flatMap(id => nav.filter(item => item.id === id))
 
 export function Workspace({ user, route, onProfileChange, onLogout }: {
   user: Profile; route: string; onProfileChange: (profile: Profile) => void; onLogout: () => void
@@ -90,6 +91,7 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
       {page === 'home' && <Home user={user} />}
       {page === 'schedule' && <SchedulePage />}
       {page === 'grades' && <GradesPage />}
+      {page === 'rating' && <RatingPage />}
       {page === 'new' && <Wizard user={user} />}
       {page === 'requests' && (remainder ? <CaseDetails key={remainder} id={remainder} staff={staff} onChange={reload} /> : <CaseList staff={staff} />)}
       {page === 'campus' && <Campus key={remainder} room={safeDecode(remainder)} />}

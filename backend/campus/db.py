@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import (
-    JSON, Column, Date, ForeignKey, Index, Integer, LargeBinary, MetaData, String,
+    JSON, CheckConstraint, Column, Date, ForeignKey, Index, Integer, LargeBinary, MetaData, String,
     Table, Text, UniqueConstraint, create_engine, event, func, text,
 )
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
@@ -68,6 +68,14 @@ grades = Table(
     Column('user_id', ForeignKey('users.id'), nullable=False, index=True),
     Column('subject', String(120), nullable=False), Column('kind', String(32), nullable=False),
     Column('result', String(24)), Column('exam_date', Date),
+)
+ratings = Table(
+    'ratings', meta,
+    Column('user_id', ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
+    Column('subject', String(120), primary_key=True),
+    Column('earned', Integer, nullable=False),
+    Column('maximum', Integer, nullable=False),
+    CheckConstraint('maximum > 0 AND earned >= 0 AND earned <= maximum', name='ratings_valid_points'),
 )
 events = Table(
     'events', meta, Column('id', Integer, primary_key=True), Column('category', String(32), nullable=False),
