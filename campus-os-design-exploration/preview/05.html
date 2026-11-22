@@ -7,6 +7,7 @@
   <title>UTRET</title>
   <script>
     function openCover() {
+      if (location.hash === '#education-universe') return;
       if (location.pathname === '/' && (location.hash === '#login' || location.hash.startsWith('#app/'))) {
         const route = location.hash === '#login' ? '' : location.hash;
         location.replace('/lks' + location.search + route);
@@ -19,6 +20,22 @@
     }
 
     history.scrollRestoration = 'manual';
+    if (typeof WebGL2RenderingContext === 'function' && !navigator.connection?.saveData) {
+      const directToMap = location.hash === '#education-universe';
+      const mapBundle = document.createElement('link');
+      mapBundle.rel = 'modulepreload';
+      mapBundle.href = '/education-universe/scene.bundle.mjs';
+      mapBundle.fetchPriority = directToMap ? 'high' : 'low';
+      document.head.append(mapBundle);
+      if (directToMap && typeof DecompressionStream === 'function') {
+        const graph = document.createElement('link');
+        graph.rel = 'preload';
+        graph.as = 'fetch';
+        graph.href = '/education-universe/data/education_universe.graph.json.gz';
+        graph.crossOrigin = 'anonymous';
+        document.head.append(graph);
+      }
+    }
     openCover();
     window.addEventListener('pageshow', ({ persisted }) => {
       if (persisted) openCover();

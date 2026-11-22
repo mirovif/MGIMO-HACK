@@ -671,12 +671,13 @@ function makeOrbit(radius, squash, tilt, opacity, color) {
   );
 }
 
-export async function createUniverseScene(canvas, graph, handlers, modelFiles, loadSignal) {
+export async function createUniverseScene(canvas, graph, handlers, modelFiles, loadSignal, meshoptDecoder) {
   const attributes = { alpha: true, antialias: true, powerPreference: 'high-performance' };
   const context = canvas.getContext('webgl2', attributes);
   if (!context) return null;
 
   const loader = new GLTFLoader();
+  if (meshoptDecoder) loader.setMeshoptDecoder(meshoptDecoder);
   const modelDirectory = new URL('./models/', import.meta.url);
   const [gyroscope, constellation, programModel] = await Promise.all(
     modelFiles.map((file) => loader.parseAsync(file, modelDirectory.href)),

@@ -63,5 +63,7 @@ mountBooklet(document.querySelector('#student-id'));
 mountStory(document.querySelector('#campus'));
 mountKameta(document.querySelector('#kameta'));
 mountTeam(document.querySelector('#team'));
-mountEducationUniverse(document.querySelector('[data-education-universe]'));
+const universe = document.querySelector('[data-education-universe]');
+mountEducationUniverse(universe);
+if (location.hash === '#education-universe') universe.scrollIntoView({ behavior: 'instant' });
 startPage({ videoSource: '../assets/campus-fast.mp4' });

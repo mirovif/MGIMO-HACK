@@ -40,7 +40,7 @@ const universeFiles = [
 ]
 await Promise.all([
   build({
-    entryPoints: [fileURLToPath(new URL('education-universe/scene.mjs', source))],
+    entryPoints: [fileURLToPath(new URL('universe-scene-entry.mjs', import.meta.url))],
     outfile: fileURLToPath(new URL('scene.bundle.mjs', universe)),
     platform: 'browser',
     format: 'esm',
@@ -48,6 +48,7 @@ await Promise.all([
     bundle: true,
     minify: true,
     legalComments: 'eof',
+    loader: { '.gz': 'binary' },
   }),
   ...universeFiles.map(name => pipeline(
     createReadStream(new URL(name, universe)),

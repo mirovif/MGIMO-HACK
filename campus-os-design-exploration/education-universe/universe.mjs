@@ -2,6 +2,28 @@ import { loadGraph, loadUniverseAsset } from './graph.mjs';
 
 const CATALOG_LOAD_TIMEOUT_MS = 45000;
 const MAP_LOAD_TIMEOUT_MS = 180000;
+let sceneBundle;
+
+function loadSceneBundle() {
+  return sceneBundle ??= import('./scene.bundle.mjs').catch(() => null);
+}
+
+async function loadSceneAssets(signal) {
+  const bundle = await loadSceneBundle();
+  if (bundle?.loadModelFiles && typeof DecompressionStream === 'function') {
+    const { createUniverseScene, MeshoptDecoder } = bundle;
+    return { createUniverseScene, MeshoptDecoder, modelFiles: await bundle.loadModelFiles() };
+  }
+  const [{ createUniverseScene }, modelFiles] = await Promise.all([
+    bundle ?? import('./scene.mjs'),
+    Promise.all([
+      'mgimo_chrome_sculpture',
+      'mgimo_faculty_constellation',
+      'mgimo_program_artifact',
+    ].map(name => loadUniverseAsset(new URL(`./models/${name}.glb`, import.meta.url), signal))),
+  ]);
+  return { createUniverseScene, modelFiles };
+}
 
 const labels = {
   school: 'Высшая школа или факультет',
@@ -148,6 +170,8 @@ export function mountEducationUniverse(section) {
     graphRequest = request;
     const timeout = setTimeout(() => request.abort(), CATALOG_LOAD_TIMEOUT_MS);
     const restoreFocus = document.activeElement === retry;
+    const openMapByDefault = supportsMap && !restoreFocus && !navigator.connection?.saveData;
+    if (openMapByDefault) void loadSceneBundle();
     retry.hidden = true;
     setStatus('Загружаем данные…');
     try {
@@ -157,7 +181,7 @@ export function mountEducationUniverse(section) {
       setMode('list');
       mapButton.hidden = !supportsMap;
       if (restoreFocus) panel.querySelector('h3').focus({ preventScroll: true });
-      if (supportsMap && !restoreFocus && !navigator.connection?.saveData) {
+      if (openMapByDefault) {
         void loadMap(false);
       }
     } catch (error) {
@@ -194,14 +218,7 @@ export function mountEducationUniverse(section) {
       setStatus('3D-карта не загрузилась.');
     }, MAP_LOAD_TIMEOUT_MS);
     try {
-      const [{ createUniverseScene }, modelFiles] = await Promise.all([
-        import('./scene.bundle.mjs').catch(() => import('./scene.mjs')),
-        Promise.all([
-          'mgimo_chrome_sculpture',
-          'mgimo_faculty_constellation',
-          'mgimo_program_artifact',
-        ].map(name => loadUniverseAsset(new URL(`./models/${name}.glb`, import.meta.url), request.signal))),
-      ]);
+      const { createUniverseScene, modelFiles, MeshoptDecoder } = await loadSceneAssets(request.signal);
       if (request.signal.aborted) return;
       const loadedScene = await createUniverseScene(canvas, graph, {
         select(id) {
@@ -227,7 +244,7 @@ export function mountEducationUniverse(section) {
           mapButton.hidden = true;
           setStatus('3D-карта недоступна в этом браузере.');
         },
-      }, modelFiles, request.signal);
+      }, modelFiles, request.signal, MeshoptDecoder);
       if (request.signal.aborted) {
         loadedScene?.dispose();
         return;
