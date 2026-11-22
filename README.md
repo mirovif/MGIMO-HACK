@@ -24,6 +24,8 @@
 
 В наборе РЭУ **9 высших школ (факультетов), 14 узлов направлений, 19 программ, 377 дисциплин и 828 связей**. Один JSON хранит узлы, рёбра и индексы. Three.js рисует сцену WebGL с моделями GLB. HTML-список использует тот же граф и позволяет пройти по тем же связям, в том числе без WebGL.
 
+На телефоне можно коснуться узла, чтобы открыть его карточку, повернуть общий вид одним пальцем и приблизить его двумя пальцами или кнопками масштаба.
+
 ![Карточка программы, путь по графу и список дисциплин](docs/readme/universe-program.jpg)
 
 [Открыть вселенную в кабинете](https://utret-ivan45646.mia0.amvera.tech/lks#app/catalog) · [JSON графа](https://github.com/mirovif/MGIMO-HACK/blob/amvera/campus-os-design-exploration/education-universe/data/education_universe.graph.json)
