@@ -1,26 +1,7 @@
-import { loadGraph } from './graph.mjs';
+import { loadGraph, loadUniverseAsset } from './graph.mjs';
 
-const MAP_LOAD_TIMEOUT_MS = 90000;
-
-async function loadModel(name, signal) {
-  const url = new URL(`./models/${name}.glb`, import.meta.url);
-  const options = { signal, priority: 'high' };
-  if (typeof DecompressionStream === 'function') {
-    try {
-      const compressed = await fetch(url.href + '.gz', options);
-      if (compressed.ok && compressed.body) {
-        const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
-        return await new Response(stream).arrayBuffer();
-      }
-      await compressed.body?.cancel();
-    } catch (error) {
-      if (signal.aborted) throw error;
-    }
-  }
-  const response = await fetch(url, options);
-  if (!response.ok) throw new Error(`Не удалось загрузить модель ${name}.`);
-  return response.arrayBuffer();
-}
+const CATALOG_LOAD_TIMEOUT_MS = 45000;
+const MAP_LOAD_TIMEOUT_MS = 180000;
 
 const labels = {
   school: 'Высшая школа или факультет',
@@ -165,7 +146,7 @@ export function mountEducationUniverse(section) {
     if (graphRequest || graph || disposed) return;
     const request = new AbortController();
     graphRequest = request;
-    const timeout = setTimeout(() => request.abort(), 12000);
+    const timeout = setTimeout(() => request.abort(), CATALOG_LOAD_TIMEOUT_MS);
     const restoreFocus = document.activeElement === retry;
     retry.hidden = true;
     setStatus('Загружаем данные…');
@@ -219,7 +200,7 @@ export function mountEducationUniverse(section) {
           'mgimo_chrome_sculpture',
           'mgimo_faculty_constellation',
           'mgimo_program_artifact',
-        ].map(name => loadModel(name, request.signal))),
+        ].map(name => loadUniverseAsset(new URL(`./models/${name}.glb`, import.meta.url), request.signal))),
       ]);
       if (request.signal.aborted) return;
       const loadedScene = await createUniverseScene(canvas, graph, {
@@ -329,7 +310,7 @@ export function mountEducationUniverse(section) {
     if (!entry.isIntersecting) return;
     loadObserver.disconnect();
     void loadCatalog();
-  }, { rootMargin: '550px 0px' });
+  }, { rootMargin: '1200px 0px' });
   activityObserver?.observe(section);
   if (loadObserver) loadObserver.observe(section);
   else void loadCatalog();

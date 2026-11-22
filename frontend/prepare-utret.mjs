@@ -29,10 +29,15 @@ await mkdir(new URL('assets/', target), { recursive: true })
 await mkdir(new URL('preview/', target), { recursive: true })
 await Promise.all(files.map(file => cp(new URL(file, source), new URL(file, target), { recursive: true })))
 
-const models = new URL('education-universe/models/', target)
-const modelFiles = ['mgimo_chrome_sculpture.glb', 'mgimo_faculty_constellation.glb', 'mgimo_program_artifact.glb']
-await Promise.all(modelFiles.map(name => pipeline(
-  createReadStream(new URL(name, models)),
+const universe = new URL('education-universe/', target)
+const universeFiles = [
+  'data/education_universe.graph.json',
+  'models/mgimo_chrome_sculpture.glb',
+  'models/mgimo_faculty_constellation.glb',
+  'models/mgimo_program_artifact.glb',
+]
+await Promise.all(universeFiles.map(name => pipeline(
+  createReadStream(new URL(name, universe)),
   createGzip({ level: 9 }),
-  createWriteStream(new URL(name + '.gz', models)),
+  createWriteStream(new URL(name + '.gz', universe)),
 )))

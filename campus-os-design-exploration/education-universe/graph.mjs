@@ -149,8 +149,26 @@ export function adaptGraph(raw) {
   };
 }
 
+export async function loadUniverseAsset(url, signal) {
+  const options = { signal, priority: 'high' };
+  if (typeof DecompressionStream === 'function') {
+    try {
+      const compressed = await fetch(String(url) + '.gz', options);
+      if (compressed.ok && compressed.body) {
+        const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
+        return await new Response(stream).arrayBuffer();
+      }
+      await compressed.body?.cancel();
+    } catch (error) {
+      if (signal?.aborted) throw error;
+    }
+  }
+  const response = await fetch(url, options);
+  if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
+  return response.arrayBuffer();
+}
+
 export async function loadGraph(url = new URL('./data/education_universe.graph.json', import.meta.url), { signal } = {}) {
-  const response = await fetch(url, { signal, priority: 'high' });
-  if (!response.ok) throw new Error('Не удалось загрузить академический каталог.');
-  return adaptGraph(await response.json());
+  const content = await loadUniverseAsset(url, signal);
+  return adaptGraph(JSON.parse(new TextDecoder().decode(content)));
 }
