@@ -30,7 +30,7 @@
 
 Данные взяты со страниц программ РЭУ и охватывают основные дисциплины.
 
-[Открыть сцену](https://utret-ivan45646.mia0.amvera.tech/#education-universe) · [Посмотреть данные графа](../campus-os-design-exploration/education-universe/data/education_universe.graph.json)
+[Открыть сцену](https://utret-ivan45646.msk1.amvera.tech/#education-universe) · [Посмотреть данные графа](../campus-os-design-exploration/education-universe/data/education_universe.graph.json)
 
 <!-- next-page -->
 
