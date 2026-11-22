@@ -1,6 +1,6 @@
 # UTRET. Проверка по критериям
 
-Команда DS CLUB. 22 ноября 2026 года. Сборка Amvera `9e4e16c`.
+Команда DS CLUB
 
 [Сайт на Amvera](https://utret-ivan45646.mia0.amvera.tech/) · [Личный кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [README и архитектура](https://github.com/mirovif/MGIMO-HACK)
 
