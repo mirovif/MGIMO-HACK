@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs'
-import { cp, mkdir, readdir } from 'node:fs/promises'
+import { cp, mkdir, readFile, readdir } from 'node:fs/promises'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 import { createGzip } from 'node:zlib'
@@ -32,6 +32,7 @@ await mkdir(new URL('preview/', target), { recursive: true })
 await Promise.all(files.map(file => cp(new URL(file, source), new URL(file, target), { recursive: true })))
 
 const universe = new URL('education-universe/', target)
+const meshoptLicense = await readFile(new URL('LICENSE.md', import.meta.resolve('meshoptimizer/decoder')), 'utf8')
 const universeFiles = [
   'data/education_universe.graph.json',
   'models/mgimo_chrome_sculpture.glb',
@@ -48,6 +49,7 @@ await Promise.all([
     bundle: true,
     minify: true,
     legalComments: 'eof',
+    banner: { js: `/* Meshoptimizer\n${meshoptLicense.trimEnd()}\n*/` },
     loader: { '.gz': 'binary' },
   }),
   ...universeFiles.map(name => pipeline(
