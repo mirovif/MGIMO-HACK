@@ -39,10 +39,10 @@ export function header(siteName, items = navigation, cabinetUrl) {
     </div>`;
 }
 
-export function videoMarkup({ src = '../assets/campus-still.webp', width = 1280, height = 720 } = {}) {
+export function videoMarkup({ src = '../assets/campus-still.webp', width = 1280, height = 720, deferPoster = false } = {}) {
   return `
     <div class="hero-media" aria-hidden="true">
-      <img class="hero-poster" src="${src}" width="${width}" height="${height}" alt="" fetchpriority="high">
+      <img class="hero-poster" src="${src}" width="${width}" height="${height}" alt="" ${deferPoster ? 'loading="lazy" fetchpriority="low"' : 'fetchpriority="high"'}>
       <video class="hero-video" muted autoplay loop playsinline preload="none" tabindex="-1" disablepictureinpicture></video>
     </div>`;
 }

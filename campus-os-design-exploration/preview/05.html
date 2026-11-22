@@ -20,8 +20,16 @@
     }
 
     history.scrollRestoration = 'manual';
+    const directToMap = location.hash === '#education-universe';
+    if (!directToMap) {
+      const poster = document.createElement('link');
+      poster.rel = 'preload';
+      poster.as = 'image';
+      poster.href = '/assets/campus-still-fast.webp';
+      poster.fetchPriority = 'high';
+      document.head.append(poster);
+    }
     if (typeof WebGL2RenderingContext === 'function' && !navigator.connection?.saveData) {
-      const directToMap = location.hash === '#education-universe';
       const mapBundle = document.createElement('link');
       mapBundle.rel = 'modulepreload';
       mapBundle.href = '/education-universe/scene.bundle.mjs';
@@ -45,7 +53,6 @@
     });
   </script>
   <link rel="icon" href="data:,">
-  <link rel="preload" as="image" href="/assets/campus-still-fast.webp" fetchpriority="high">
   <link rel="stylesheet" href="/fonts.css">
   <link rel="stylesheet" href="/utret-theme.css">
   <link rel="stylesheet" href="/preview/shared.css">
