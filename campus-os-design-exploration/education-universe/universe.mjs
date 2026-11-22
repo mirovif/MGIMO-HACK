@@ -195,7 +195,7 @@ export function mountEducationUniverse(section) {
     }, MAP_LOAD_TIMEOUT_MS);
     try {
       const [{ createUniverseScene }, modelFiles] = await Promise.all([
-        import('./scene.mjs'),
+        import('./scene.bundle.mjs').catch(() => import('./scene.mjs')),
         Promise.all([
           'mgimo_chrome_sculpture',
           'mgimo_faculty_constellation',

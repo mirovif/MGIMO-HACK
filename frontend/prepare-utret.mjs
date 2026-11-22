@@ -1,7 +1,9 @@
 import { createReadStream, createWriteStream } from 'node:fs'
 import { cp, mkdir, readdir } from 'node:fs/promises'
 import { pipeline } from 'node:stream/promises'
+import { fileURLToPath } from 'node:url'
 import { createGzip } from 'node:zlib'
+import { build } from 'esbuild'
 
 const source = new URL('../campus-os-design-exploration/', import.meta.url)
 const target = new URL('./public/', import.meta.url)
@@ -36,8 +38,20 @@ const universeFiles = [
   'models/mgimo_faculty_constellation.glb',
   'models/mgimo_program_artifact.glb',
 ]
-await Promise.all(universeFiles.map(name => pipeline(
-  createReadStream(new URL(name, universe)),
-  createGzip({ level: 9 }),
-  createWriteStream(new URL(name + '.gz', universe)),
-)))
+await Promise.all([
+  build({
+    entryPoints: [fileURLToPath(new URL('education-universe/scene.mjs', source))],
+    outfile: fileURLToPath(new URL('scene.bundle.mjs', universe)),
+    platform: 'browser',
+    format: 'esm',
+    target: 'es2020',
+    bundle: true,
+    minify: true,
+    legalComments: 'eof',
+  }),
+  ...universeFiles.map(name => pipeline(
+    createReadStream(new URL(name, universe)),
+    createGzip({ level: 9 }),
+    createWriteStream(new URL(name + '.gz', universe)),
+  )),
+])
