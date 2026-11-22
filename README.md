@@ -135,8 +135,8 @@ sequenceDiagram
 Понадобятся Node.js 24 и Python 3.12. Команды ниже рассчитаны на PowerShell.
 
 ```powershell
-git clone https://github.com/mirovif/MGIMO-HACK.git
-Set-Location MGIMO-HACK
+git clone https://github.com/mirovif/UTRET.git
+Set-Location UTRET
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend/requirements-dev.txt
 npm ci --prefix frontend
@@ -155,6 +155,6 @@ npm run dev --prefix frontend
 
 Откройте [локальный кабинет](http://localhost:3000/lks). При `DEMO_SEED=true` новые демонстрационные аккаунты `student1`, `student2`, `student3` и `staff` используют пароль из локального `.env`. Для локальной разработки предусмотрен режим `mock`. Опубликованная Комета использует Polza AI с серверным ключом.
 
-Ветка `master` содержит актуальный код и документацию. Amvera развёртывается из ветки `amvera`. Текущая сборка сайта соответствует коммиту [4ec3364](https://github.com/mirovif/MGIMO-HACK/commit/4ec33646acccaa1f9f94788c5d7953c5caea55cb). Учебные записи и обращения в демонстрационных аккаунтах вымышлены.
+Ветка `master` содержит актуальный код и документацию. Amvera развёртывается из ветки `amvera`. Текущая сборка сайта соответствует коммиту [4ec3364](https://github.com/mirovif/UTRET/commit/4ec33646acccaa1f9f94788c5d7953c5caea55cb). Учебные записи и обращения в демонстрационных аккаунтах вымышлены.
 
 [Переменные Amvera и запуск Docker](amvera/README.md) · [Лицензии и сторонние материалы](docs/contest/THIRD_PARTY.md)
