@@ -16,8 +16,8 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
   return <div className="empty"><strong>{title}</strong>{children && <div>{children}</div>}</div>
 }
 
-export function Section({ title, text, action, children }: { title: string; text?: string; action?: ReactNode; children: ReactNode }) {
-  return <section className="section"><header className="section-head"><div><h1>{title}</h1>{text && <p>{text}</p>}</div>{action}</header>{children}</section>
+export function Section({ title, text, action, children, className }: { title: string; text?: string; action?: ReactNode; children: ReactNode; className?: string }) {
+  return <section className={className ? 'section ' + className : 'section'}><header className="section-head"><div><h1>{title}</h1>{text && <p>{text}</p>}</div>{action}</header>{children}</section>
 }
 
 export function StatusBadge({ status }: { status: Status }) {

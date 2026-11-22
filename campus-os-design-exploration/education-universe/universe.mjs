@@ -1,4 +1,29 @@
-import { loadGraph } from './graph.mjs';
+import { loadGraph, loadUniverseAsset } from './graph.mjs';
+
+const CATALOG_LOAD_TIMEOUT_MS = 45000;
+const MAP_LOAD_TIMEOUT_MS = 180000;
+let sceneBundle;
+
+function loadSceneBundle() {
+  return sceneBundle ??= import('./scene.bundle.mjs').catch(() => null);
+}
+
+async function loadSceneAssets(signal) {
+  const bundle = await loadSceneBundle();
+  if (bundle?.loadModelFiles && typeof DecompressionStream === 'function') {
+    const { createUniverseScene, MeshoptDecoder } = bundle;
+    return { createUniverseScene, MeshoptDecoder, modelFiles: await bundle.loadModelFiles() };
+  }
+  const [{ createUniverseScene }, modelFiles] = await Promise.all([
+    bundle ?? import('./scene.mjs'),
+    Promise.all([
+      'mgimo_chrome_sculpture',
+      'mgimo_faculty_constellation',
+      'mgimo_program_artifact',
+    ].map(name => loadUniverseAsset(new URL(`./models/${name}.glb`, import.meta.url), signal))),
+  ]);
+  return { createUniverseScene, modelFiles };
+}
 
 const labels = {
   school: 'Высшая школа или факультет',
@@ -49,7 +74,7 @@ function panelContent(graph, path, contextual) {
     : `<div class="eu-related"><h4>${relatedLabel}</h4>${relatedList}</div>`;
   return `
     <header class="eu-panel-head">
-      <p class="eu-kind">${overview ? 'Каталог · РЭУ им. Г. В. Плеханова' : labels[node.type]}</p>
+      <p class="eu-kind">${overview ? 'РЭУ им. Г. В. Плеханова' : labels[node.type]}</p>
       <h3 id="eu-selection-title" tabindex="-1">${escape(node.label)}</h3>
       ${node.code && node.type === 'direction' ? `<p class="eu-note eu-code">${escape(node.code)}</p>` : ''}
       ${parent && ['direction', 'program'].includes(node.type) ? `<p class="eu-note">${escape(parent.label)}</p>` : ''}
@@ -143,10 +168,12 @@ export function mountEducationUniverse(section) {
     if (graphRequest || graph || disposed) return;
     const request = new AbortController();
     graphRequest = request;
-    const timeout = setTimeout(() => request.abort(), 12000);
+    const timeout = setTimeout(() => request.abort(), CATALOG_LOAD_TIMEOUT_MS);
     const restoreFocus = document.activeElement === retry;
+    const openMapByDefault = supportsMap && !restoreFocus && !navigator.connection?.saveData;
+    if (openMapByDefault) void loadSceneBundle();
     retry.hidden = true;
-    setStatus('Загружаем каталог…');
+    setStatus('Загружаем данные…');
     try {
       graph = await loadGraph(undefined, { signal: request.signal });
       if (disposed) return;
@@ -154,16 +181,14 @@ export function mountEducationUniverse(section) {
       setMode('list');
       mapButton.hidden = !supportsMap;
       if (restoreFocus) panel.querySelector('h3').focus({ preventScroll: true });
-      const connection = navigator.connection;
-      if (supportsMap && !restoreFocus && !connection?.saveData &&
-          !/2g|3g/.test(connection?.effectiveType ?? '') && matchMedia('(min-width: 841px)').matches) {
+      if (openMapByDefault) {
         void loadMap(false);
       }
     } catch (error) {
       if (disposed) return;
       graph = undefined;
       section.dataset.universeMode = 'error';
-      setStatus('Не удалось загрузить каталог.');
+      setStatus('Не удалось загрузить образовательную вселенную.');
       retry.hidden = false;
       if (restoreFocus) retry.focus({ preventScroll: true });
       if (!request.signal.aborted) console.error('Education Universe:', error);
@@ -191,9 +216,9 @@ export function mountEducationUniverse(section) {
       request.abort();
       finishMapRequest(request);
       setStatus('3D-карта не загрузилась.');
-    }, 20000);
+    }, MAP_LOAD_TIMEOUT_MS);
     try {
-      const { createUniverseScene } = await import('./scene.mjs');
+      const { createUniverseScene, modelFiles, MeshoptDecoder } = await loadSceneAssets(request.signal);
       if (request.signal.aborted) return;
       const loadedScene = await createUniverseScene(canvas, graph, {
         select(id) {
@@ -219,7 +244,7 @@ export function mountEducationUniverse(section) {
           mapButton.hidden = true;
           setStatus('3D-карта недоступна в этом браузере.');
         },
-      }, request.signal);
+      }, modelFiles, request.signal, MeshoptDecoder);
       if (request.signal.aborted) {
         loadedScene?.dispose();
         return;
@@ -302,7 +327,7 @@ export function mountEducationUniverse(section) {
     if (!entry.isIntersecting) return;
     loadObserver.disconnect();
     void loadCatalog();
-  }, { rootMargin: '550px 0px' });
+  }, { rootMargin: '1200px 0px' });
   activityObserver?.observe(section);
   if (loadObserver) loadObserver.observe(section);
   else void loadCatalog();

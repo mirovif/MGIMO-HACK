@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { confirmationPhoto } from './fixtures'
 
 test.use({ viewport: { width: 360, height: 800 } })
 
@@ -60,10 +61,16 @@ test('submitting a certificate preserves a different draft and its attachment', 
   await back.click()
   await page.getByRole('button', { name: /Мне нужна справка/ }).click()
   await page.getByLabel('Какой документ вам нужен?').selectOption('study')
+  await page.getByLabel('Фото подтверждающего документа').setInputFiles(confirmationPhoto)
+  await expect(page.getByText('demo.pdf', { exact: true })).toHaveCount(0)
   await next.click()
   const request = page.waitForRequest(request => request.url().endsWith('/api/requests') && request.method() === 'POST')
   await page.getByRole('button', { name: 'Отправить обращение' }).click()
-  expect((await request).postDataJSON()).toEqual({ scenario: 'certificate', details: { certificate_type: 'study', comment: '' } })
+  const submitted = await request
+  expect(submitted.headers()['content-type']).toContain('multipart/form-data')
+  expect(submitted.postData()).toContain('filename="confirmation.png"')
+  expect(submitted.postData()).toContain('{"scenario":"certificate","details":{"certificate_type":"study","comment":""}}')
+  expect(submitted.postData()).not.toContain('demo.pdf')
 
   await page.getByRole('button', { name: 'Создать ещё обращение' }).click()
   await page.getByRole('button', { name: /Я заболел/ }).click()

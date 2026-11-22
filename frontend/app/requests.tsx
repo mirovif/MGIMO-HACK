@@ -29,7 +29,7 @@ function makeDraft(scenario: Scenario, subject = ''): Draft {
 
 function readDraft(value: Draft | undefined): Draft | null {
   if (!value || !Object.hasOwn(scenarios, value.scenario) || typeof value.key !== 'string') return null
-  if (value.scenario === 'certificate' && value.step === 2) return { ...value, step: 1 }
+  if (value.scenario === 'certificate' && value.step > 0) return { ...value, step: 0 }
   return value
 }
 
@@ -65,13 +65,14 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
     }
   })
   const draft = saved.active ? saved.drafts[saved.active] : undefined
-  const [file, setFile] = useState<File>()
+  const [files, setFiles] = useState<Partial<Record<Scenario, File>>>({})
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const [created, setCreated] = useState<CaseDetail>()
   const [choosing, setChoosing] = useState(false)
   const submission = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
+  const fileInput = useRef<HTMLInputElement>(null)
   const grades = useResource<Grade[]>(draft?.scenario === 'retake' ? '/grades' : null)
   const selectedSubject = draft && grades.data?.some(item => item.subject === draft.subject) ? draft.subject : ''
   const missed = useResource<Lesson[]>(draft?.scenario === 'illness' && draft.step > 0
@@ -116,11 +117,22 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
   const plan = scenarios[draft.scenario].steps
   const last = plan.length - 1
   const { scenario, step } = draft
+  const file = files[scenario]
+  const needsPhoto = scenario === 'certificate'
+
+  function changeAttachment(selected?: File) {
+    setFiles(previous => ({ ...previous, [scenario]: selected }))
+    update({ attachmentName: selected?.name }, !!file || selected?.name !== current.attachmentName)
+  }
 
   async function next(event: FormEvent) {
     event.preventDefault()
     if (submission.current) return
     setError('')
+    if (needsPhoto && !file) {
+      setError('Прикрепите фото подтверждающего документа.')
+      return
+    }
     if (scenario === 'illness' && step === 0) {
       const days = (Date.parse(current.end) - Date.parse(current.start)) / 86_400_000
       if (!Number.isFinite(days) || days < 0 || days > 30) { setError('Укажите период от 1 до 31 дня и проверьте порядок дат.'); return }
@@ -139,9 +151,8 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
       : scenario === 'certificate' ? { certificate_type: current.certificate, comment: current.comment }
       : { category: current.category, comment: current.comment }
     const json = JSON.stringify({ scenario, details })
-    const attachment = scenario === 'illness' ? file : undefined
-    const multipart = attachment ? new FormData() : null
-    if (multipart && attachment) { multipart.set('payload', json); multipart.set('file', attachment) }
+    const multipart = file ? new FormData() : null
+    if (multipart && file) { multipart.set('payload', json); multipart.set('file', file) }
     try {
       const response = await api<CaseDetail>('/requests', { method: 'POST', headers: { 'Idempotency-Key': current.key }, body: multipart || json })
       setSaved(previous => {
@@ -149,7 +160,7 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
         delete drafts[scenario]
         return { active: null, drafts }
       })
-      if (scenario === 'illness') setFile(undefined)
+      if (file) setFiles(previous => ({ ...previous, [scenario]: undefined }))
       setCreated(response)
     } catch (err) { setError(errorText(err)) }
     finally { submission.current = false; setSending(false) }
@@ -178,22 +189,9 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
             missed: event.target.checked ? [...draft.missed, lesson.id] : draft.missed.filter(id => id !== lesson.id),
           })} /><span><strong>{lesson.subject}</strong><small>{formatDate(lesson.date)} · {lesson.start}</small></span></label>)}
         </>}
-        {scenario === 'illness' && step === 2 && <>
-          <label>Комментарий <small>Необязательно</small><textarea value={draft.comment} maxLength={2000} onChange={event => update({ comment: event.target.value })} rows={4} /></label>
-          <label>Демонстрационный документ <small>PDF, PNG или JPEG до 3 МБ. Выберите файл без реальных персональных данных.</small>
-            <input type="file" accept=".pdf,.png,.jpeg,.jpg,application/pdf,image/png,image/jpeg" onChange={event => {
-              const selected = event.target.files?.[0]
-              if (selected && selected.size > 3 * 1024 * 1024) {
-                event.target.value = ''; setError('Выберите файл размером до 3 МБ.')
-              } else { setFile(selected); update({ attachmentName: selected?.name }, selected?.name !== draft.attachmentName) }
-            }} />
-          </label>
-          {draft.attachmentName && <div className="attachment-line"><FileText size={18} /><span>{draft.attachmentName}</span><button className="text-button" type="button" onClick={() => {
-            setFile(undefined); update({ attachmentName: undefined })
-            const control = document.querySelector<HTMLInputElement>('input[type=file]')
-            if (control) control.value = ''
-          }}>Убрать</button></div>}
-        </>}
+        {scenario === 'illness' && step === 2 && <label>Комментарий <small>Необязательно</small>
+          <textarea value={draft.comment} maxLength={2000} onChange={event => update({ comment: event.target.value })} rows={4} />
+        </label>}
         {scenario === 'retake' && <>
           {grades.loading && <Busy />}{grades.error && <Problem text={grades.error} retry={grades.reload} />}
           {grades.data?.length === 0 && <Empty title="Дисциплины пока не появились" />}
@@ -204,6 +202,31 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
         {scenario === 'certificate' && step === 0 && <label>Какой документ вам нужен?<select required value={draft.certificate} onChange={event => update({ certificate: event.target.value as Draft['certificate'] })}>
           <option value="">Выбрать тип</option>{Object.entries(certificates).map(([key, name]) => <option key={key} value={key}>{name}</option>)}
         </select></label>}
+        {((needsPhoto && step === 0) || (scenario === 'illness' && step === 2)) && <>
+          <label>{needsPhoto ? 'Фото подтверждающего документа' : 'Демонстрационный документ'}
+            <small>{needsPhoto
+              ? 'Обязательно. Например, фото справки из больницы. PNG или JPEG до 3 МБ.'
+              : 'PDF, PNG или JPEG до 3 МБ. Выберите файл без реальных персональных данных.'}</small>
+            <input ref={fileInput} type="file" required={needsPhoto && !file}
+              accept={needsPhoto ? '.png,.jpeg,.jpg,image/png,image/jpeg' : '.pdf,.png,.jpeg,.jpg,application/pdf,image/png,image/jpeg'}
+              onChange={event => {
+                const selected = event.target.files?.[0]
+                if (!selected) return
+                if (!selected.size || selected.size > 3 * 1024 * 1024) {
+                  event.target.value = ''; setError('Выберите непустой файл размером до 3 МБ.'); return
+                }
+                if (needsPhoto && !/\.(png|jpe?g)$/i.test(selected.name)) {
+                  event.target.value = ''; setError('Выберите фото в формате PNG или JPEG.'); return
+                }
+                changeAttachment(selected)
+              }} />
+          </label>
+          {draft.attachmentName && <div className="attachment-line"><FileText size={18} /><span>{draft.attachmentName}</span>
+            <button className="text-button" type="button" onClick={() => {
+              changeAttachment()
+              if (fileInput.current) fileInput.current.value = ''
+            }}>Убрать</button></div>}
+        </>}
         {scenario === 'other' && step === 0 && <label>О чём ваш вопрос?<select required value={draft.category} onChange={event => update({ category: event.target.value as Draft['category'] })}>
           <option value="">Выбрать категорию</option>{Object.entries(caseCategories).map(([key, name]) => <option key={key} value={key}>{name}</option>)}
         </select></label>}
@@ -213,6 +236,7 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
         {scenario === 'illness' && step === last && missed.loading && <Busy />}
         {scenario === 'illness' && step === last && missed.error && <Problem text={missed.error} retry={missed.reload} />}
         {scenario === 'illness' && step >= 2 && draft.attachmentName && !file && <Problem text="Выберите файл снова на шаге «Комментарий и документ» или уберите его из черновика." />}
+        {needsPhoto && draft.attachmentName && !file && <Problem text="Прикрепите фото заново после перезагрузки страницы." />}
         {step === last && <CaseFacts attachment={draft.attachmentName} details={{
           ...(scenario === 'illness' ? { start_date: draft.start, end_date: draft.end, missed_lessons: missed.data?.filter(item => draft.missed.includes(item.id)) } : {}),
           ...(scenario === 'retake' ? { subject: draft.subject } : {}),
@@ -223,7 +247,7 @@ export function Wizard({ user, retakeSubject }: { user: Profile; retakeSubject?:
       </div>
       <div className="wizard-actions">
         <button type="button" className="button secondary" disabled={sending} onClick={() => step ? update({ step: step - 1 }, false) : setChoosing(true)}><ArrowLeft size={18} /> Назад</button>
-        <button className="button primary" disabled={sending || (scenario === 'retake' && !grades.data?.length) ||
+        <button className="button primary" disabled={sending || (needsPhoto && !file) || (scenario === 'retake' && !grades.data?.length) ||
           (scenario === 'illness' && ((step === 1 || step === last) && !missed.data || step >= 2 && !!draft.attachmentName && !file))}>
           {sending ? 'Отправляем…' : step === last ? 'Отправить обращение' : 'Далее'}{step === last ? <ClipboardCheck size={18} /> : <ArrowRight size={18} />}
         </button>

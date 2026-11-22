@@ -1,7 +1,10 @@
-export const educationUniverseMarkup = `
-<section id="education-universe" class="education-universe" aria-labelledby="eu-title" data-education-universe>
+export const educationUniverseTitle = 'Образовательная вселенная';
+
+export function renderEducationUniverse({ embedded = false } = {}) {
+  return `
+<section id="education-universe" class="education-universe" ${embedded ? 'aria-label="' + educationUniverseTitle + '"' : 'aria-labelledby="eu-title"'} data-education-universe>
   <header class="eu-intro">
-    <h2 id="eu-title">Образовательная вселенная</h2>
+    ${embedded ? '' : '<h2 id="eu-title">' + educationUniverseTitle + '</h2>'}
     <p>Демонстрационные данные РЭУ им. Г. В. Плеханова</p>
   </header>
   <div class="eu-scene">
@@ -13,7 +16,7 @@ export const educationUniverseMarkup = `
     </div>
   </div>
   <div class="eu-actions">
-    <p class="eu-status" role="status" data-universe-status>Загружаем каталог…</p>
+    <p class="eu-status" role="status" data-universe-status>Загружаем данные…</p>
     <button type="button" data-universe-retry hidden>Повторить загрузку</button>
     <button type="button" data-universe-map hidden>Открыть 3D-карту</button>
   </div>
@@ -24,3 +27,6 @@ export const educationUniverseMarkup = `
   <div class="eu-index" data-universe-panel></div>
 </section>
 `;
+}
+
+export const educationUniverseMarkup = renderEducationUniverse();

@@ -8,6 +8,8 @@ import { kametaMarkup, mountKameta } from './05-kameta.mjs';
 import { teamMarkup, mountTeam } from './05-team.mjs';
 
 const siteName = 'UTRET';
+const directToMap = location.hash === '#education-universe';
+const deferRouteImage = directToMap && typeof IntersectionObserver === 'function';
 const utretNavigation = navigation
   .filter(([id]) => id === 'university' || id === 'education')
   .map(([id, label]) => id === 'education' ? ['education-universe', label] : [id, 'Карта РЭУ']);
@@ -17,7 +19,10 @@ document.body.innerHTML = `
     ${header(siteName, utretNavigation, '/lks')}
     <div class="relief-stage">
       <div class="relief-film">
-        ${videoMarkup({ src: '../assets/campus-still-fast.webp', width: 960, height: 540 })}
+        ${videoMarkup({
+          src: '../assets/campus-still-fast.webp', width: 960, height: 540,
+          deferPoster: directToMap,
+        })}
       </div>
       <h1 class="relief-title">
         <span><span>Учёба</span></span>
@@ -48,8 +53,8 @@ document.body.innerHTML = `
         <a class="relief-action" href="${campusMapUrl}" target="_blank" rel="noopener noreferrer">Открыть карту РЭУ</a>
       </div>
       <figure class="relief-route-preview">
-        <figcaption>Пример маршрута</figcaption>
-        <ol><li>Корпус № 1</li><li>Корпус № 9</li></ol>
+        <img ${deferRouteImage ? 'data-src' : 'src'}="../assets/navigation-route.webp" width="321" height="375" loading="lazy" decoding="async" fetchpriority="low"
+          alt="Маршрут между корпусами кампуса. В пути 4 минуты, расстояние 239 метров.">
       </figure>
       <span class="relief-route-trace" aria-hidden="true"></span>
     </section>
@@ -64,4 +69,13 @@ mountStory(document.querySelector('#campus'));
 mountKameta(document.querySelector('#kameta'));
 mountTeam(document.querySelector('#team'));
 mountEducationUniverse(document.querySelector('[data-education-universe]'));
+if (deferRouteImage) {
+  const image = document.querySelector('.relief-route-preview img');
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    image.src = image.dataset.src;
+    observer.disconnect();
+  }, { rootMargin: '250px' });
+  observer.observe(image);
+}
 startPage({ videoSource: '../assets/campus-fast.mp4' });

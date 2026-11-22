@@ -111,12 +111,13 @@ def engine_for(url=None):
     if url.startswith('postgresql+psycopg://'):
         return create_engine(url, poolclass=NullPool, hide_parameters=True,
                              connect_args={'connect_timeout': 8, 'prepare_threshold': None})
-    if production:
-        raise RuntimeError('В production требуется постоянная PostgreSQL DATABASE_URL.')
+    sqlite_path = Path(os.getenv('CAMPUS_SQLITE_PATH', ''))
+    if production and (os.getenv('VERCEL') or url or not sqlite_path.is_absolute()):
+        raise RuntimeError('В production требуется PostgreSQL DATABASE_URL или абсолютный CAMPUS_SQLITE_PATH вне Vercel.')
     if url and not url.startswith('sqlite:///'):
         raise RuntimeError('Поддерживаются SQLite и PostgreSQL с psycopg.')
     if not url:
-        local = Path(__file__).resolve().parents[1] / 'campus.sqlite3'
+        local = sqlite_path if sqlite_path.is_absolute() else Path(__file__).resolve().parents[1] / 'campus.sqlite3'
         url = f'sqlite:///{local.as_posix()}'
     engine = create_engine(url, hide_parameters=True, connect_args={'timeout': 10})
 

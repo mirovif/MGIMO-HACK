@@ -1,9 +1,9 @@
 'use client'
 
-import { Pencil, UserRound } from 'lucide-react'
+import { ArrowUpRight, Pencil, UserRound } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { api, errorText, useResource, type Profile } from './lib'
-import { Busy, Problem, Section } from './ui'
+import { Busy, Problem, ProfileFacts, Section } from './ui'
 import styles from './account-profile.module.css'
 
 type ProfileDetails = {
@@ -138,6 +138,13 @@ export function AccountProfile({ user, action, onProfileChange }: {
           </div>
         </section>
       )}
+      {student && <article className="panel student-ticket" aria-labelledby="profile-ticket-title">
+        <h2 id="profile-ticket-title">Студенческий билет</h2>
+        <header className="panel-head"><span className="utret-brand">UTRET</span><span className="muted small">РЭУ имени Г. В. Плеханова</span></header>
+        <p className="student-ticket-name">{fullName}</p>
+        <ProfileFacts profile={user} showName={false} />
+        <a className="button primary" href="#app/grades">Открыть зачётку <ArrowUpRight size={17} aria-hidden="true" /></a>
+      </article>}
     </Section>
   )
 }

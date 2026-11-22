@@ -1,4 +1,5 @@
 import json
+from base64 import b64decode
 from concurrent.futures import ThreadPoolExecutor
 
 import httpx
@@ -8,6 +9,10 @@ from fastapi.testclient import TestClient
 from app import create_app
 from campus import public_schedule
 from campus.rag import import_document
+
+CONFIRMATION_PHOTO = ('confirmation.png', b64decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/zO0AAAAASUVORK5CYII='
+), 'image/png')
 
 
 @pytest.fixture(autouse=True)
@@ -176,8 +181,9 @@ def test_full_name_is_used_by_the_cabinet_and_new_certificate_requests(tmp_path)
         assert student.get('/api/profile').json()['name'] == name
         assert login(student, 'student1')['name'] == name
 
+        data = {'scenario': 'certificate', 'details': {'certificate_type': 'study'}}
         response = student.post('/api/requests', headers={'Idempotency-Key': 'c60d1141-f64a-4518-9d0c-491676df44ad'},
-                                json={'scenario': 'certificate', 'details': {'certificate_type': 'study'}})
+                                data={'payload': json.dumps(data)}, files={'file': CONFIRMATION_PHOTO})
         assert response.status_code == 201
         case = response.json()
         assert case['details']['profile']['name'] == case['student'] == case['history'][0]['actor'] == name
@@ -236,13 +242,21 @@ def test_request_round_trip_and_restart(tmp_path):
         first_grades = student.get('/api/grades').json()
         assert student.post('/api/requests', json=data).status_code == 422
         headers = {'Idempotency-Key': key}
-        created = student.post('/api/requests', json=data, headers=headers)
+        assert student.post('/api/requests', json=data, headers=headers).status_code == 422
+        assert student.post('/api/requests', data={'payload': json.dumps(data)}, headers=headers,
+                            files={'file': ('confirmation.pdf', b'%PDF-1.5\n', 'application/pdf')}).status_code == 422
+        assert student.get('/api/requests').json() == []
+        created = student.post('/api/requests', data={'payload': json.dumps(data)}, headers=headers,
+                               files={'file': CONFIRMATION_PHOTO})
         assert created.status_code == 201, created.text
+        assert created.json()['attachment'] == CONFIRMATION_PHOTO[0]
         request_id = created.json()['id']
         path = f'/api/requests/{request_id}'
-        assert student.post('/api/requests', json=data, headers=headers).json()['id'] == request_id
+        assert student.post('/api/requests', data={'payload': json.dumps(data)}, headers=headers,
+                            files={'file': CONFIRMATION_PHOTO}).json()['id'] == request_id
         other = {'scenario': 'certificate', 'details': {'certificate_type': 'scholarship'}}
-        assert student.post('/api/requests', json=other, headers=headers).status_code == 409
+        assert student.post('/api/requests', data={'payload': json.dumps(other)}, headers=headers,
+                            files={'file': CONFIRMATION_PHOTO}).status_code == 409
 
         with TestClient(app) as stranger:
             assert login(stranger, 'student2')['id'] != first_profile['id']
@@ -254,6 +268,10 @@ def test_request_round_trip_and_restart(tmp_path):
 
         with TestClient(app) as staff:
             login(staff, 'staff')
+            download = staff.get(path + '/attachment')
+            assert download.status_code == 200
+            assert download.headers['content-type'] == CONFIRMATION_PHOTO[2]
+            assert download.content == CONFIRMATION_PHOTO[1]
             assert student.post(path + '/staff', json={'status': 'review', 'version': 1}).status_code == 403
             assert staff.get('/api/requests').json()[0]['id'] == request_id
             assert staff.post(path + '/staff', json={'status': 'resolved', 'version': 1}).status_code == 409
@@ -271,6 +289,7 @@ def test_request_round_trip_and_restart(tmp_path):
         restarted.cookies.set('campus_session', token)
         detail = restarted.get(path).json()
         assert detail['status'] == 'resolved'
+        assert restarted.get(path + '/attachment').content == CONFIRMATION_PHOTO[1]
         assert [item['status'] for item in detail['history']] == ['submitted', 'review', 'clarification', 'review', 'resolved']
         assert restarted.post('/api/auth/logout').status_code == 204
         restarted.cookies.set('campus_session', token)

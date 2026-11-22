@@ -2,16 +2,16 @@
 
 import {
   ArrowUpRight, Bell, BookOpen, CalendarDays, ChartNoAxesColumn, ChevronRight, CircleUserRound, ClipboardList, GraduationCap, House,
-  IdCard, LogOut, MapPin, Menu, MessageCircle, MoveRight, NotebookPen, PartyPopper, RefreshCw, X,
+  LogOut, MapPin, Menu, MessageCircle, MoveRight, NotebookPen, PartyPopper, RefreshCw, X,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { AccountProfile } from './account-profile'
 import { api, errorText, formatDate, formatTime, moscowToday, useResource, type CaseSummary, type Notice, type Profile, type Schedule } from './lib'
 import { AssistantPage } from './chat'
-import { EducationCatalog } from './education-catalog'
+import { EducationCatalog, educationUniverseTitle } from './education-catalog'
 import { CaseDetails, CaseList, Wizard } from './requests'
 import { Campus, EventsPage, GradesPage, LessonList, RatingPage, SchedulePage } from './student'
-import { Busy, Empty, Problem, ProfileFacts, Section, StatusBadge } from './ui'
+import { Busy, Empty, Problem, Section, StatusBadge } from './ui'
 
 const nav = [
   { id: 'home', label: 'Обзор', icon: House },
@@ -21,8 +21,7 @@ const nav = [
   { id: 'new', label: 'Решить ситуацию', icon: NotebookPen },
   { id: 'requests', label: 'Мои обращения', icon: ClipboardList },
   { id: 'campus', label: 'Карта РЭУ', icon: MapPin },
-  { id: 'catalog', label: 'Каталог', icon: BookOpen },
-  { id: 'ticket', label: 'Студенческий билет', icon: IdCard },
+  { id: 'catalog', label: educationUniverseTitle, icon: BookOpen },
   { id: 'events', label: 'Мероприятия', icon: PartyPopper },
   { id: 'notifications', label: 'Уведомления', icon: Bell },
   { id: 'assistant', label: 'Комета', icon: MessageCircle },
@@ -38,7 +37,8 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
   const headerName = user.name
   const allowed = staff ? nav.filter(item => ['requests', 'notifications', 'profile'].includes(item.id)) : nav
   const [, section, remainder] = route.split('/')
-  const page = allowed.some(item => item.id === section) ? section : staff ? 'requests' : 'home'
+  const destination = section === 'ticket' && !staff ? 'profile' : section
+  const page = allowed.some(item => item.id === destination) ? destination : staff ? 'requests' : 'home'
   const retakeSubject = remainder?.startsWith('retake?') ? new URLSearchParams(remainder.slice(7)).get('subject') ?? undefined : undefined
   const [open, setOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -97,7 +97,6 @@ export function Workspace({ user, route, onProfileChange, onLogout }: {
       {page === 'requests' && (remainder ? <CaseDetails key={remainder} id={remainder} staff={staff} onChange={reload} /> : <CaseList staff={staff} />)}
       {page === 'campus' && <Campus key={remainder} room={safeDecode(remainder)} />}
       {page === 'catalog' && <EducationCatalog />}
-      {page === 'ticket' && <StudentTicket user={user} />}
       {page === 'events' && <EventsPage />}
       {page === 'notifications' && <Notifications resource={notices} />}
       {page === 'assistant' && <AssistantPage user={user} />}
@@ -146,20 +145,6 @@ function Home({ user }: { user: Profile }) {
       {cases.data?.length === 0 && <Empty title="Пока нет обращений">Отправленные заявки появятся здесь.</Empty>}
       {cases.data?.slice(0, 3).map(item => <a key={item.id} href={'#app/requests/' + item.id} className="inline-case"><strong>{item.number}</strong><StatusBadge status={item.status} /></a>)}
     </div>
-  </Section>
-}
-
-function StudentTicket({ user }: { user: Profile }) {
-  return <Section title="Студенческий билет" text="Демонстрационные данные студента.">
-    <article className="panel student-ticket">
-      <header className="panel-head"><span className="utret-brand">UTRET</span><span className="muted small">РЭУ имени Г. В. Плеханова</span></header>
-      <h2>{user.name}</h2>
-      <ProfileFacts profile={user} showName={false} />
-      <div className="button-group">
-        <a className="button primary" href="#app/grades">Открыть зачётку <ArrowUpRight size={17} /></a>
-        <a className="button secondary" href="#app/profile">Профиль</a>
-      </div>
-    </article>
   </Section>
 }
 

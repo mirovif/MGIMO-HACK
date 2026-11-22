@@ -1,0 +1,17 @@
+.git
+.vercel
+.env*
+**/.env*
+**/node_modules
+**/.next
+**/__pycache__
+**/.pytest_cache
+**/*.sqlite3*
+frontend/public
+frontend/test-results
+frontend/playwright-report
+archive
+docs
+design-inspiration-library
+output
+campus-os-design-exploration/assets/campus.mp4

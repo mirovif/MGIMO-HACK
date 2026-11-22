@@ -178,13 +178,21 @@ def save_submission(engine, user, key, data, file):
         raise HTTPException(422, 'Проверьте обязательные поля обращения.') from exc
     payload = {'scenario': data.scenario, 'details': parsed.model_dump(mode='json')}
     if file:
-        if data.scenario != 'illness':
-            raise HTTPException(422, 'Вложение предусмотрено для сценария болезни.')
+        if data.scenario not in {'illness', 'certificate'}:
+            raise HTTPException(422, 'Вложение можно добавить к заявке на справку или о пропуске занятий.')
+        if data.scenario == 'certificate' and file['content_type'] not in {'image/png', 'image/jpeg'}:
+            raise HTTPException(422, 'Для справки приложите фото подтверждающего документа в PNG или JPEG.')
         payload['file'] = [file['name'], hashlib.sha256(file['content']).hexdigest()]
     fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
     case_id = str(uuid4())
     timestamp = now()
     with engine.begin() as conn:
+        if data.scenario == 'certificate' and not file:
+            # An exact retry may refer to a certificate request submitted before attachments became mandatory.
+            prior = conn.execute(case_query(user).where(requests.c.idempotency_key == key)).mappings().first()
+            if prior is not None and prior['fingerprint'] == fingerprint:
+                return detail(conn, prior)
+            raise HTTPException(422, 'Прикрепите фото подтверждающего документа.')
         details = validate_details(conn, user, parsed)
         created = insert_once(conn, requests, dict(
             id=case_id, user_id=user['id'], idempotency_key=key, fingerprint=fingerprint,
@@ -210,7 +218,8 @@ def save_submission(engine, user, key, data, file):
             'type': 'object', 'required': ['payload'],
             'properties': {
                 'payload': {'type': 'string', 'description': 'JSON с полями scenario и details'},
-                'file': {'type': 'string', 'format': 'binary', 'description': 'Вложение до 3 МБ для сценария illness'},
+                'file': {'type': 'string', 'format': 'binary',
+                         'description': 'Фото PNG/JPEG до 3 МБ обязательно для certificate. Для illness вложение необязательно.'},
             },
         }},
     }},

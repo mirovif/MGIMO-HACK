@@ -7,6 +7,7 @@
   <title>UTRET</title>
   <script>
     function openCover() {
+      if (location.hash === '#education-universe') return;
       if (location.pathname === '/' && (location.hash === '#login' || location.hash.startsWith('#app/'))) {
         const route = location.hash === '#login' ? '' : location.hash;
         location.replace('/lks' + location.search + route);
@@ -19,6 +20,31 @@
     }
 
     history.scrollRestoration = 'manual';
+    const directToMap = location.hash === '#education-universe';
+    if (!directToMap) {
+      const poster = document.createElement('link');
+      poster.rel = 'preload';
+      poster.as = 'image';
+      poster.href = '/assets/campus-still-fast.webp';
+      poster.fetchPriority = 'high';
+      document.head.append(poster);
+    }
+    if (typeof WebGL2RenderingContext === 'function' && !navigator.connection?.saveData) {
+      const mapBundle = document.createElement('link');
+      mapBundle.rel = 'modulepreload';
+      mapBundle.href = '/education-universe/scene.bundle.mjs';
+      mapBundle.fetchPriority = directToMap ? 'high' : 'auto';
+      document.head.append(mapBundle);
+      if (typeof DecompressionStream === 'function') {
+        const graph = document.createElement('link');
+        graph.rel = 'preload';
+        graph.as = 'fetch';
+        graph.href = '/education-universe/data/education_universe.graph.json.gz';
+        graph.crossOrigin = 'anonymous';
+        graph.fetchPriority = directToMap ? 'high' : 'low';
+        document.head.append(graph);
+      }
+    }
     openCover();
     window.addEventListener('pageshow', ({ persisted }) => {
       if (persisted) openCover();
@@ -28,7 +54,6 @@
     });
   </script>
   <link rel="icon" href="data:,">
-  <link rel="preload" as="image" href="/assets/campus-still-fast.webp" fetchpriority="high">
   <link rel="stylesheet" href="/fonts.css">
   <link rel="stylesheet" href="/utret-theme.css">
   <link rel="stylesheet" href="/preview/shared.css">
