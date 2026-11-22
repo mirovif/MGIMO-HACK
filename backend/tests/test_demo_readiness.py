@@ -99,3 +99,44 @@ def test_fresh_demo_database_includes_the_third_student(tmp_path, monkeypatch):
         assert profile['group']
         assert len(client.get('/api/grades').json()) == 4
         assert client.get('/api/rating').json()['earned'] == 258
+
+
+def test_individual_student_passwords_apply_on_restart(tmp_path, monkeypatch):
+    monkeypatch.delenv('VERCEL', raising=False)
+    monkeypatch.setenv('APP_ENV', 'development')
+    monkeypatch.setenv('DEMO_SEED', 'true')
+    monkeypatch.setenv('DEMO_PASSWORD', FIXTURE_PASSWORD)
+    url = f'sqlite:///{(tmp_path / "campus.db").as_posix()}'
+    credentials = {
+        'student1': 'fixture-one-password',
+        'student2': 'fixture-two-password',
+        'student3': 'fixture-three-password',
+    }
+
+    with TestClient(create_app(url)) as client:
+        original = _login(client, 'student1')
+        created = client.post('/api/requests', headers={'Idempotency-Key': str(uuid4())}, json={
+            'scenario': 'other', 'details': {'category': 'study', 'comment': 'Демонстрационная заявка'},
+        })
+        assert created.status_code == 201
+        old_session = client.cookies.get('campus_session')
+        case_id = created.json()['id']
+
+    for login, password in credentials.items():
+        monkeypatch.setenv(login.upper(), password)
+
+    with TestClient(create_app(url)) as client:
+        client.cookies.set('campus_session', old_session)
+        assert client.get('/api/profile').status_code == 401
+        client.cookies.clear()
+        for login, password in credentials.items():
+            assert client.post('/api/auth/login', json={'login': login, 'password': FIXTURE_PASSWORD}).status_code == 401
+            assert _login(client, login, password)['login'] == login
+        assert _login(client, 'staff')['role'] == 'staff'
+        assert _login(client, 'student1', credentials['student1'])['id'] == original['id']
+        assert client.get('/api/requests/' + case_id).status_code == 200
+        current_session = client.cookies.get('campus_session')
+
+    with TestClient(create_app(url)) as client:
+        client.cookies.set('campus_session', current_session)
+        assert client.get('/api/profile').json()['id'] == original['id']

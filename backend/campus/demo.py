@@ -1,9 +1,9 @@
 import os
 from datetime import date, datetime, timedelta, timezone
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
 
-from .db import events, grades, insert_once, notifications, now, profile_details, ratings, users
+from .db import events, grades, insert_once, notifications, now, profile_details, ratings, sessions, users
 
 MOSCOW = timezone(timedelta(hours=3), 'Europe/Moscow')
 
@@ -70,24 +70,34 @@ def fill_missing_values(conn, table, identity, values):
 
 
 def seed_demo(conn):
-    from .auth import hash_password
+    from .auth import hash_password, password_matches
 
-    password = os.getenv('DEMO_PASSWORD') or 'Campus-demo-26'
+    default_password = os.getenv('DEMO_PASSWORD') or 'Campus-demo-26'
     # Initialization serializes this seed. IDs continue after rows written by older explicit-ID fixtures.
     next_user_id = (conn.scalar(select(func.max(users.c.id))) or 0) + 1
     next_grade_id = (conn.scalar(select(func.max(grades.c.id))) or 0) + 1
     seed_date = today()
     for login, role, name, faculty, program, year, group in DEMO_USERS:
-        user = conn.execute(select(users.c.id, users.c.role).where(users.c.login == login)).one_or_none()
+        secret = login.upper()
+        student_password = os.getenv(secret) if role == 'student' else None
+        if student_password and not 12 <= len(student_password) <= 128:
+            raise RuntimeError(f'Задайте {secret} длиной от 12 до 128 символов.')
+        user = conn.execute(
+            select(users.c.id, users.c.role, users.c.password).where(users.c.login == login),
+        ).one_or_none()
         academic = dict(faculty=faculty, program=program, year=year, group=group) if role == 'student' else dict(faculty=faculty)
         if user is None:
             user_id = next_user_id
             next_user_id += 1
             conn.execute(users.insert().values(
-                id=user_id, login=login, password=hash_password(password), role=role, name=name, **academic,
+                id=user_id, login=login, password=hash_password(student_password or default_password),
+                role=role, name=name, **academic,
             ))
         elif user.role == role:
             user_id = user.id
+            if student_password and not password_matches(student_password, user.password):
+                conn.execute(update(users).where(users.c.id == user_id).values(password=hash_password(student_password)))
+                conn.execute(delete(sessions).where(sessions.c.user_id == user_id))
             fill_missing_values(conn, users, users.c.id == user_id, academic)
         else:
             continue
