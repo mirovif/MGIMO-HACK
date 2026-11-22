@@ -2,7 +2,7 @@
 
 **Цифровой деканат команды DS CLUB.** Студент РЭУ может открыть расписание, посмотреть оценки, найти аудиторию и решить вопрос с деканатом из одного кабинета.
 
-[Открыть UTRET](https://utret-ivan45646.mia0.amvera.tech/) · [Личный кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [Исходники сборки Amvera](https://github.com/mirovif/MGIMO-HACK/tree/amvera)
+[Сайт на Amvera](https://utret-ivan45646.mia0.amvera.tech/) · [Личный кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [Исходники сборки Amvera](https://github.com/mirovif/MGIMO-HACK/tree/amvera)
 
 ## Что мы придумали
 
