@@ -6,7 +6,7 @@
 
 [![UTRET — цифровой деканат. Обложка с открытой 3D-сценой РЭУ](docs/readme/utret-cover.jpg)](https://utret-ivan45646.mia0.amvera.tech/#education-universe)
 
-## Что показать в демо
+## Возможности личного кабинета
 
 | Сценарий | Что увидит студент |
 | --- | --- |
