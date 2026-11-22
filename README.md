@@ -71,4 +71,4 @@ npm run dev --prefix frontend
 
 Откройте [локальный кабинет](http://localhost:3000/lks). При `DEMO_SEED=true` новые аккаунты `student1`, `student2`, `student3` и `staff` используют пароль из `.env`. В режиме `AI_MODE=mock` ключ модели не нужен. Доступы к опубликованному демо команда передаёт отдельно.
 
-Конкурсная версия развёрнута из ветки `amvera`. Код в `master` соответствует сборке [4ec3364](https://github.com/mirovif/UTRET/commit/4ec33646acccaa1f9f94788c5d7953c5caea55cb) на Amvera. [Развёртывание и переменные окружения](amvera/README.md) · [Сторонние материалы](docs/contest/THIRD_PARTY.md)
+Приложение развёртывается из ветки `amvera`. Секреты `STUDENT1`, `STUDENT2` и `STUDENT3` задают пароли демонстрационных студентов при запуске. [Развёртывание и переменные окружения](amvera/README.md) · [Сторонние материалы](docs/contest/THIRD_PARTY.md)

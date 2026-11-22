@@ -25,6 +25,10 @@ def hash_password(password, salt=None):
     return f'{salt}:{digest}'
 
 
+def password_matches(password, stored):
+    return hmac.compare_digest(hash_password(password, stored.split(':', 1)[0]), stored)
+
+
 DUMMY_PASSWORD = hash_password('dummy', '00' * 16)
 
 
@@ -143,7 +147,7 @@ def login(data: Credentials, request: Request, response: Response):
     with engine.connect() as conn:
         user = conn.execute(profile_query().where(users.c.login == data.login.strip().casefold())).mappings().first()
     stored = user['password'] if user else DUMMY_PASSWORD
-    if not hmac.compare_digest(hash_password(data.password, stored.split(':', 1)[0]), stored) or not user:
+    if not password_matches(data.password, stored) or not user:
         raise HTTPException(401, 'Проверьте логин и пароль.')
     token = secrets.token_urlsafe(32)
     timestamp = int(time.time())
