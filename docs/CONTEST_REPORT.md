@@ -6,8 +6,6 @@
 
 Конкурс «Цифровой деканат будущего»
 
-[Открыть демо](https://utret-ivan45646.mia0.amvera.tech/) · [Личный кабинет](https://utret-ivan45646.mia0.amvera.tech/lks) · [Репозиторий](https://github.com/mirovif/UTRET)
-
 ![Образовательная вселенная в опубликованном приложении](readme/universe-overview.jpg)
 
 Мы собрали расписание, успеваемость, студенческий билет и обращения в одном кабинете. Из расписания студент переходит к карте кампуса, из уведомления о пересдаче открывает форму с нужной дисциплиной, а по вопросу о правилах вуза получает у Кометы цитату со ссылкой.
@@ -30,7 +28,9 @@
 
 На телефоне карточка открывается касанием. Сцену можно повернуть одним пальцем и приблизить двумя. 3D-сцена Three.js и список читают один JSON. Если в браузере нет WebGL, доступен список.
 
-Данные взяты со страниц программ РЭУ и охватывают основные дисциплины. [Открыть сцену](https://utret-ivan45646.mia0.amvera.tech/#education-universe) · [Посмотреть данные графа](../campus-os-design-exploration/education-universe/data/education_universe.graph.json)
+Данные взяты со страниц программ РЭУ и охватывают основные дисциплины.
+
+[Открыть сцену](https://utret-ivan45646.mia0.amvera.tech/#education-universe) · [Посмотреть данные графа](../campus-os-design-exploration/education-universe/data/education_universe.graph.json)
 
 <!-- next-page -->
 
