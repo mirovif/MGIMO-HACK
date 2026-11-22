@@ -24,7 +24,7 @@
 
 Один JSON питает сцену Three.js и HTML-список. В текущей сборке 3D-код и сжатые модели загружаются одним файлом, а граф подгружается параллельно. Список работает с теми же данными и доступен при отсутствии WebGL.
 
-![Карточка программы с путём от факультета и списком дисциплин](docs/readme/universe-program.jpg)
+![Программа «Международные экономические отношения» и её дисциплины на открытой 3D-карте](docs/readme/universe-program.jpg)
 
 [Данные графа](campus-os-design-exploration/education-universe/data/education_universe.graph.json) · [Загрузчик сцены](campus-os-design-exploration/education-universe/universe.mjs)
 
