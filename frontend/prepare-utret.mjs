@@ -1,4 +1,7 @@
+import { createReadStream, createWriteStream } from 'node:fs'
 import { cp, mkdir, readdir } from 'node:fs/promises'
+import { pipeline } from 'node:stream/promises'
+import { createGzip } from 'node:zlib'
 
 const source = new URL('../campus-os-design-exploration/', import.meta.url)
 const target = new URL('./public/', import.meta.url)
@@ -25,3 +28,11 @@ const files = [
 await mkdir(new URL('assets/', target), { recursive: true })
 await mkdir(new URL('preview/', target), { recursive: true })
 await Promise.all(files.map(file => cp(new URL(file, source), new URL(file, target), { recursive: true })))
+
+const models = new URL('education-universe/models/', target)
+const modelFiles = ['mgimo_chrome_sculpture.glb', 'mgimo_faculty_constellation.glb', 'mgimo_program_artifact.glb']
+await Promise.all(modelFiles.map(name => pipeline(
+  createReadStream(new URL(name, models)),
+  createGzip({ level: 9 }),
+  createWriteStream(new URL(name + '.gz', models)),
+)))

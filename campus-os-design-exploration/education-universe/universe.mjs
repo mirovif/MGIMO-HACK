@@ -1,5 +1,27 @@
 import { loadGraph } from './graph.mjs';
 
+const MAP_LOAD_TIMEOUT_MS = 90000;
+
+async function loadModel(name, signal) {
+  const url = new URL(`./models/${name}.glb`, import.meta.url);
+  const options = { signal, priority: 'high' };
+  if (typeof DecompressionStream === 'function') {
+    try {
+      const compressed = await fetch(url.href + '.gz', options);
+      if (compressed.ok && compressed.body) {
+        const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
+        return await new Response(stream).arrayBuffer();
+      }
+      await compressed.body?.cancel();
+    } catch (error) {
+      if (signal.aborted) throw error;
+    }
+  }
+  const response = await fetch(url, options);
+  if (!response.ok) throw new Error(`Не удалось загрузить модель ${name}.`);
+  return response.arrayBuffer();
+}
+
 const labels = {
   school: 'Высшая школа или факультет',
   direction: 'Направление подготовки',
@@ -154,9 +176,7 @@ export function mountEducationUniverse(section) {
       setMode('list');
       mapButton.hidden = !supportsMap;
       if (restoreFocus) panel.querySelector('h3').focus({ preventScroll: true });
-      const connection = navigator.connection;
-      if (supportsMap && !restoreFocus && !connection?.saveData &&
-          !/2g|3g/.test(connection?.effectiveType ?? '') && matchMedia('(min-width: 841px)').matches) {
+      if (supportsMap && !restoreFocus && !navigator.connection?.saveData) {
         void loadMap(false);
       }
     } catch (error) {
@@ -191,9 +211,16 @@ export function mountEducationUniverse(section) {
       request.abort();
       finishMapRequest(request);
       setStatus('3D-карта не загрузилась.');
-    }, 20000);
+    }, MAP_LOAD_TIMEOUT_MS);
     try {
-      const { createUniverseScene } = await import('./scene.mjs');
+      const [{ createUniverseScene }, modelFiles] = await Promise.all([
+        import('./scene.mjs'),
+        Promise.all([
+          'mgimo_chrome_sculpture',
+          'mgimo_faculty_constellation',
+          'mgimo_program_artifact',
+        ].map(name => loadModel(name, request.signal))),
+      ]);
       if (request.signal.aborted) return;
       const loadedScene = await createUniverseScene(canvas, graph, {
         select(id) {
@@ -219,7 +246,7 @@ export function mountEducationUniverse(section) {
           mapButton.hidden = true;
           setStatus('3D-карта недоступна в этом браузере.');
         },
-      }, request.signal);
+      }, modelFiles, request.signal);
       if (request.signal.aborted) {
         loadedScene?.dispose();
         return;

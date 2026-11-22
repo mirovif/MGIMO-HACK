@@ -671,26 +671,17 @@ function makeOrbit(radius, squash, tilt, opacity, color) {
   );
 }
 
-export async function createUniverseScene(canvas, graph, handlers, loadSignal) {
+export async function createUniverseScene(canvas, graph, handlers, modelFiles, loadSignal) {
   const attributes = { alpha: true, antialias: true, powerPreference: 'high-performance' };
   const context = canvas.getContext('webgl2', attributes);
   if (!context) return null;
 
   const loader = new GLTFLoader();
   const modelDirectory = new URL('./models/', import.meta.url);
-  const modelFiles = await Promise.all([
-    'mgimo_chrome_sculpture',
-    'mgimo_faculty_constellation',
-    'mgimo_program_artifact',
-  ].map(async (name) => {
-    const response = await fetch(new URL(`${name}.glb`, modelDirectory), { signal: loadSignal });
-    if (!response.ok) throw new Error(`Не удалось загрузить модель ${name}.`);
-    return response.arrayBuffer();
-  }));
-  if (loadSignal.aborted) return null;
   const [gyroscope, constellation, programModel] = await Promise.all(
     modelFiles.map((file) => loader.parseAsync(file, modelDirectory.href)),
   );
+  if (loadSignal.aborted) return null;
 
   const renderer = new THREE.WebGLRenderer({ canvas, context, ...attributes });
   renderer.setClearColor(0x080a10, 0);
